@@ -1,4 +1,5 @@
 import 'package:aceup/util/const.dart';
+import 'package:aceup/widgets/screen-title.dart';
 import 'package:flutter/material.dart';
 import 'details.dart';
 
@@ -18,16 +19,7 @@ class _LearnState extends State<Learn> {
     return Scaffold(
       body: ListView(
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(top: 20, left: 30),
-            child: Text(
-              "Learn",
-              style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).accentColor),
-            ),
-          ),
+          ScreenTitle("Learn"),
 
           // Course Banner
           Container(
@@ -60,6 +52,7 @@ class _LearnState extends State<Learn> {
                           fontSize: 15,
                         ),
                         maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.left,
                       ),
                     ),

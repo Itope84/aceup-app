@@ -24,6 +24,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
   material_design_icons_flutter: 3.2.4096
+  flutter_tex: ^1.0.9
+  flutter_html: ^0.10.4
 
 dev_dependencies:
   flutter_launcher_icons: "^0.7.2"
@@ -48,6 +50,8 @@ flutter:
     - assets/4.jpeg
     - assets/5.jpeg
     - assets/chemistry.png
+    - assets/mth-101.png
+    - assets/mth-105.png
     - assets/playground.png
     - assets/avatars/001.png
     - assets/avatars/002.png
@@ -59,6 +63,7 @@ flutter:
     - assets/avatars/008.png
     - assets/avatars/009.png
     - assets/avatars/010.png
+    - assets/quiz-icon.png
     - assets/aceup-circle-icon.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

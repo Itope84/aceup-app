@@ -1,3 +1,7 @@
+import 'package:aceup/pages/challenges.dart';
+import 'package:aceup/pages/leaderboard.dart';
+import 'package:aceup/pages/playground.dart';
+import 'package:aceup/pages/profile.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/material.dart';
 import 'home.dart';
@@ -15,7 +19,13 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   PageController _pageController;
   int _page = 0;
-  final List<Widget> topLevelPages = [Home(), Learn(), Home(), Home(), Home()];
+  final List<Widget> topLevelPages = [
+    Home(),
+    Learn(),
+    Playground(),
+    ChallengesScreen(),
+    LeaderboardScreen()
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +54,10 @@ class _MainScreenState extends State<MainScreen> {
               Icons.account_circle,
             ),
             onPressed: () {
-              // widget.changeThemeHandler();
+              Navigator.of(context)
+                  .push(MaterialPageRoute(builder: (BuildContext context) {
+                return ProfileScreen();
+              }));
             },
           ),
           IconButton(
