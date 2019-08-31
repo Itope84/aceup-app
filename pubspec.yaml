@@ -1,5 +1,5 @@
 name: aceup
-description: A new Flutter project.
+description: Learn on the go!.
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -23,8 +23,10 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
+  material_design_icons_flutter: 3.2.4096
 
 dev_dependencies:
+  flutter_launcher_icons: "^0.7.2"
   flutter_test:
     sdk: flutter
 
@@ -45,6 +47,18 @@ flutter:
     - assets/3.jpeg
     - assets/4.jpeg
     - assets/5.jpeg
+    - assets/chemistry.png
+    - assets/playground.png
+    - assets/avatars/001.png
+    - assets/avatars/002.png
+    - assets/avatars/003.png
+    - assets/avatars/004.png
+    - assets/avatars/005.png
+    - assets/avatars/006.png
+    - assets/avatars/007.png
+    - assets/avatars/008.png
+    - assets/avatars/009.png
+    - assets/avatars/010.png
     - assets/aceup-circle-icon.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
@@ -74,3 +88,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_icons:
+  android: "launcher_icon" 
+  ios: true
+  image_path: "assets/aceup-circle-icon.png"

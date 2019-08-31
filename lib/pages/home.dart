@@ -1,7 +1,6 @@
+import 'package:aceup/util/const.dart';
 import 'package:flutter/material.dart';
 import 'details.dart';
-import '../widgets/icon_badge.dart';
-import '../util/places.dart';
 
 class Home extends StatefulWidget {
   // final changeThemeHandler;
@@ -12,284 +11,406 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  final TextEditingController _searchControl = new TextEditingController();
-
+  // final TextEditingController _searchControl = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(
-            Icons.menu,
-          ),
-          onPressed: (){
-            
-          },
-        ),
-
-        actions: <Widget>[
-          IconButton(
-            icon: IconBadge(
-              icon: Icons.notifications_none,
-            ),
-            onPressed: (){
-              // widget.changeThemeHandler();
-            },
-          ),
-        ],
-      ),
-
       body: ListView(
         children: <Widget>[
           Padding(
-            padding: EdgeInsets.all(20),
+            padding: EdgeInsets.only(top: 20, left: 30),
             child: Text(
-              "Where are you \ngoing?",
+              "Continue Learning",
               style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w600,
-              ),
+                  fontSize: 25,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).accentColor),
             ),
           ),
 
-
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.blueGrey[50],
-                borderRadius: BorderRadius.all(
-                  Radius.circular(5.0),
-                ),
-              ),
-              child: TextField(
-                style: TextStyle(
-                  fontSize: 15.0,
-                  color: Colors.blueGrey[300],
-                ),
-                decoration: InputDecoration(
-                  contentPadding: EdgeInsets.all(10.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5.0),
-                    borderSide: BorderSide(color: Colors.white,),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white,),
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                  hintText: "E.g: New York, United States",
-                  prefixIcon: Icon(
-                    Icons.location_on,
-                    color: Colors.blueGrey[300],
-                  ),
-                  hintStyle: TextStyle(
-                    fontSize: 15.0,
-                    color: Colors.blueGrey[300],
-                  ),
-                ),
-                maxLines: 1,
-                controller: _searchControl,
-              ),
-            ),
-          ),
-          
+          // Latest topic
           Container(
-            padding: EdgeInsets.only(top: 10, left: 20),
-            height: 250,
-//            color: Colors.red,
-            width: MediaQuery.of(context).size.width,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              primary: false,
-              itemCount: places == null ? 0 : places.length,
-              itemBuilder: (BuildContext context, int index) {
-
-                Map place = places.reversed.toList()[index];
-                return Padding(
-                  padding: const EdgeInsets.only(right: 20),
-                  child: InkWell(
-                    child: Container(
-                      height: 250,
-                      width: 140,
-//                      color: Colors.green,
-                      child: Column(
-                        children: <Widget>[
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(
-                              "${place["img"]}",
-                              height: 178,
-                              width: 140,
-                              fit: BoxFit.cover,
-                            ),
+            padding: EdgeInsets.only(top: 10, left: 20,right: 20),
+            margin: EdgeInsets.only(bottom: 30.0),
+              child: InkWell(
+                child: Container(
+                  child: Column(
+                    children: <Widget>[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: AssetImage("assets/chemistry.png")),
                           ),
-
-                          SizedBox(height: 7),
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "${place["name"]}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                              maxLines: 2,
-                              textAlign: TextAlign.left,
+                          height: 170,
+                          width: MediaQuery.of(context).size.width * 0.85,
+                          child: Container(
+                            padding: EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    Color.fromRGBO(0, 0, 0, 0.5),
+                                    Colors.transparent
+                                  ]),
                             ),
-                          ),
-
-                          SizedBox(height: 3),
-                          Container(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "${place["location"]}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                color: Colors.blueGrey[300],
-                              ),
-                              maxLines: 1,
-                              textAlign: TextAlign.left,
-                            ),
-                          ),
-
-                        ],
-                      ),
-                    ),
-                    onTap: (){
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (BuildContext context){
-                            return Details();
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
-
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: ListView.builder(
-              primary: false,
-              physics: NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: places == null ? 0 : places.length,
-              itemBuilder: (BuildContext context, int index) {
-                Map place = places[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom:15.0),
-                  child: InkWell(
-                    child: Container(
-                      height: 70,
-//                    color: Colors.red,
-                      child: Row(
-                        children: <Widget>[
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(5),
-                            child: Image.asset(
-                              "${place["img"]}",
-                              height: 70,
-                              width: 70,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-
-                          SizedBox(width: 15),
-
-                          Container(
-                            height: 80,
-                            width: MediaQuery.of(context).size.width-130,
-                            child: ListView(
-                              primary: false,
-                              physics: NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Container(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    "${place["name"]}",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14,
-                                    ),
-                                    maxLines: 2,
-                                    textAlign: TextAlign.left,
-                                  ),
+                                Text(
+                                  "An introduction to the undiscovered era of narcissistic German Navi",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 20.0),
                                 ),
-
-                                SizedBox(height: 3),
-                                Row(
-                                  children: <Widget>[
-                                    Icon(
-                                      Icons.location_on,
-                                      size: 13,
-                                      color: Colors.blueGrey[300],
-                                    ),
-
-                                    SizedBox(width: 3),
-
-                                    Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        "${place["location"]}",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 13,
-                                          color: Colors.blueGrey[300],
-                                        ),
-                                        maxLines: 1,
-                                        textAlign: TextAlign.left,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                SizedBox(height: 10),
-                                Container(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    "${place["price"]}",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                    maxLines: 1,
-                                    textAlign: TextAlign.left,
-                                  ),
-                                ),
-
-
                               ],
                             ),
                           ),
-
-                        ],
-                      ),
-                    ),
-                    onTap: (){
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (BuildContext context){
-                            return Details();
-                          },
                         ),
-                      );
-                    },
+                      ),
+                      SizedBox(height: 7),
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.85,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "CHM101 - INTRODUCTORY CHEMISTRY I",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                          maxLines: 2,
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                    ],
                   ),
-                );
-              },
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return Details();
+                      },
+                    ),
+                  );
+                },
+              ),
+          ),
+
+          // Playground
+          // Latest topic
+          Container(
+            padding: EdgeInsets.only(top: 10, left: 20),
+            margin: EdgeInsets.only(bottom: 30.0),
+            width: MediaQuery.of(context).size.width,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 20),
+              child: InkWell(
+                child: Container(
+                  child: Column(
+                    children: <Widget>[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                                fit: BoxFit.cover,
+                                image: AssetImage("assets/playground.png")),
+                          ),
+                          height: 170,
+                          width: MediaQuery.of(context).size.width * 0.85,
+                          child: Container(
+                            padding: EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    Color.fromRGBO(0, 0, 0, 0.5),
+                                    Colors.transparent
+                                  ]),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "Playground",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                      fontSize: 20.0),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 7),
+                    ],
+                  ),
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return Details();
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
           ),
 
+          Center(
+            child: Container(
+              padding: EdgeInsets.only(top: 10, left: 0),
+              margin: EdgeInsets.only(bottom: 0.0),
+              width: MediaQuery.of(context).size.width * 0.85,
+              child: Text(
+                "Leaderboard",
+                style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).accentColor,
+                    fontSize: 20.0),
+              ),
+            ),
+          ),
 
+          // leaderboard
+          Container(
+            padding: EdgeInsets.only(top: 10, left: 20),
+            margin: EdgeInsets.only(bottom: 30.0),
+            width: MediaQuery.of(context).size.width,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 20),
+              child: InkWell(
+                child: Container(
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.all(10.0),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Color.fromRGBO(30, 30, 30, 0.3),
+                                  blurRadius: 0.3)
+                            ],
+                            color: Constants.mainWhite),
+                        width: MediaQuery.of(context).size.width * 0.85,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                              padding: EdgeInsets.all(10.0),
+                              child: Row(
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text("Pos",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w600)),
+                                  ),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Text("User",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w600)),
+                                  ),
+                                  Expanded(
+                                    child: Text("Pts",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w600)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text("2",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        Image.asset(
+                                          'assets/avatars/001.png',
+                                          width: 25.0,
+                                        ),
+                                        SizedBox(
+                                          width: 5.0,
+                                        ),
+                                        Text(
+                                          "Santiago",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 15.0,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text("40",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text("2",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        Image.asset(
+                                          'assets/avatars/001.png',
+                                          width: 25.0,
+                                        ),
+                                        SizedBox(
+                                          width: 5.0,
+                                        ),
+                                        Text(
+                                          "Santiago",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 15.0,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text("40",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.all(10.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: <Widget>[
+                                  Expanded(
+                                    child: Text("2",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        Image.asset(
+                                          'assets/avatars/001.png',
+                                          width: 25.0,
+                                        ),
+                                        SizedBox(
+                                          width: 5.0,
+                                        ),
+                                        Text(
+                                          "Santiago",
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                              fontSize: 15.0,
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text("40",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                            fontSize: 15.0,
+                                            fontWeight: FontWeight.w500)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 7),
+                    ],
+                  ),
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return Details();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
         ],
       ),
-
     );
   }
 }

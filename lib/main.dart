@@ -10,24 +10,26 @@ void main() async{
   });
 }
 
-
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  bool isDark = true;
+  bool isDark = false;
+  String primaryColor = '#04bf68';
+  String secondaryColor = '#475472';
+
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      // statusBarColor: isDark ? Constants.darkPrimary : Constants.lightPrimary,
-      statusBarColor: Constants.mainWhite,
+      statusBarColor: isDark ? Constants.mainPrimary : Constants.lightPrimary,
+      // statusBarColor: Constants.mainWhite,
       // statusBarIconBrightness: isDark?Brightness.light:Brightness.dark,
-      statusBarIconBrightness: Brightness.dark
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark
     ));
   }
 
@@ -44,7 +46,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: Constants.appName,
       // theme: isDark ? Constants.darkTheme : Constants.lightTheme,
-      theme: Constants.mainLightTheme,
+      theme: Constants.customTheme(primaryColor, secondaryColor),
       home: Entry(),
     );
   }
