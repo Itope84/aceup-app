@@ -1,9 +1,13 @@
+import 'package:aceup/models/top_level_data_model.dart';
 import 'package:aceup/pages/challenges.dart';
+import 'package:aceup/pages/json-classes/user.dart';
+// import 'package:aceup/pages/eq_demo.dart';
 import 'package:aceup/pages/leaderboard.dart';
 import 'package:aceup/pages/playground.dart';
 import 'package:aceup/pages/profile.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
 import 'home.dart';
 import 'learn.dart';
 import '../widgets/icon_badge.dart';
@@ -18,14 +22,13 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   PageController _pageController;
+  goToPage(int page) {
+    _pageController.jumpToPage(page);
+  }
+
   int _page = 0;
-  final List<Widget> topLevelPages = [
-    Home(),
-    Learn(),
-    Playground(),
-    ChallengesScreen(),
-    LeaderboardScreen()
-  ];
+
+  Model _model = new TopLevelDataModel();
 
   @override
   Widget build(BuildContext context) {
@@ -40,60 +43,176 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(
-            Icons.menu,
+    return ScopedModel<TopLevelDataModel>(
+        model: _model,
+        child: Scaffold(
+          appBar: AppBar(
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(
+                  Icons.account_circle,
+                ),
+                onPressed: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (BuildContext context) {
+                    return ProfileScreen();
+                  }));
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.lightbulb_outline,
+                ),
+                onPressed: () {
+                  // widget.changeThemeHandler();
+                },
+              ),
+            ],
           ),
-          onPressed: () {},
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.account_circle,
+          drawer: Drawer(
+            // space to fit everything.
+            child: ListView(
+              // Important: Remove any padding from the ListView.
+              padding: EdgeInsets.zero,
+              children: <Widget>[
+                Container(
+                  height: 100.0,
+                  child: DrawerHeader(
+                    child: Text(
+                      'Change Active Course',
+                      style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).primaryColor),
+                    ),
+                    decoration: BoxDecoration(
+                        // color: Colors.white,
+                        ),
+                  ),
+                ),
+                ScopedModelDescendant<TopLevelDataModel>(
+                  builder: (context, widget, model) {
+                    return FutureBuilder(
+                      future: model.userProfile,
+                      builder: (context, snapshot) {
+                        switch (snapshot.connectionState) {
+                          case ConnectionState.none:
+                            return Text(
+                              "No internet connection",
+                              textAlign: TextAlign.center,
+                            );
+                          case ConnectionState.active:
+                          case ConnectionState.waiting:
+                            return Center(
+                              child: SizedBox(
+                                width: 50,
+                                height: 50,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Theme.of(context).primaryColor),
+                                ),
+                              ),
+                            );
+                          case ConnectionState.done:
+                            if (snapshot.hasError) {
+                              return Text(
+                                "Error:${snapshot.error}",
+                                textAlign: TextAlign.center,
+                              );
+                            }
+
+                            if (!snapshot.hasData) {
+                              return Text("Nothing here at the moment");
+                            }
+
+                            User user = snapshot.data;
+
+                            return Container(
+                              child: Column(
+                                children: user.courseProfiles
+                                    .map((profile) => Container(
+                                          child: ListTile(
+                                            title: Text(
+                                              profile.course != null
+                                                  ? profile.course.title
+                                                  : "",
+                                              style: TextStyle(
+                                                  fontSize: 18.0,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: model.activeCourseProfile !=
+                                                              null &&
+                                                          profile.id ==
+                                                              model
+                                                                  .activeCourseProfile
+                                                                  .id
+                                                      ? Colors.white
+                                                      : Theme.of(context)
+                                                          .accentColor),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            onTap: () {
+                                              // Update the state of the app.
+                                              model.activeCourseProfile =
+                                                  profile;
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                          color: model.activeCourseProfile !=
+                                                      null &&
+                                                  profile.id ==
+                                                      model.activeCourseProfile
+                                                          .id
+                                              ? Theme.of(context).primaryColor
+                                              : Colors.transparent,
+                                        ))
+                                    .toList(),
+                              ),
+                            );
+                          default:
+                            return Text("Nothing here at the moment");
+                        }
+                      },
+                    );
+                  },
+                )
+              ],
             ),
-            onPressed: () {
-              Navigator.of(context)
-                  .push(MaterialPageRoute(builder: (BuildContext context) {
-                return ProfileScreen();
-              }));
-            },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.lightbulb_outline,
+          body: PageView(
+            physics: BouncingScrollPhysics(),
+            controller: _pageController,
+            onPageChanged: onPageChanged,
+            children: <Widget>[
+              Home(
+                gotoPage: (int page) {
+                  goToPage(page);
+                },
+              ),
+              Learn(),
+              Playground(),
+              ChallengesScreen(),
+              LeaderboardScreen()
+              // EqDemo()
+            ],
+          ),
+          bottomNavigationBar: BottomAppBar(
+            child: Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                SizedBox(width: 7),
+                bottomBarIcon(icon: Icons.home, page: 0),
+                bottomBarIcon(icon: MdiIcons.bookOpenPageVariant, page: 1),
+                bottomBarIcon(icon: MdiIcons.gamepadVariant, page: 2),
+                bottomBarIcon(icon: MdiIcons.medal, page: 3),
+                bottomBarIcon(icon: MdiIcons.podium, page: 4),
+                SizedBox(width: 7),
+              ],
             ),
-            onPressed: () {
-              // widget.changeThemeHandler();
-            },
+            color: Theme.of(context).backgroundColor,
           ),
-        ],
-      ),
-      body: PageView(
-        physics: BouncingScrollPhysics(),
-        controller: _pageController,
-        onPageChanged: onPageChanged,
-        // bogus, simply generates 4 pages, all of them is home shikena
-        children: List.generate(5, (index) => topLevelPages[index]),
-      ),
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            SizedBox(width: 7),
-            bottomBarIcon(icon: Icons.home, page: 0),
-            bottomBarIcon(icon: MdiIcons.bookOpenPageVariant, page: 1),
-            bottomBarIcon(icon: MdiIcons.gamepadVariant, page: 2),
-            bottomBarIcon(icon: MdiIcons.medal, page: 3),
-            bottomBarIcon(icon: MdiIcons.podium, page: 4),
-            SizedBox(width: 7),
-          ],
-        ),
-        color: Theme.of(context).backgroundColor,
-      ),
-    );
+        ));
   }
 
   void navigationTapped(int page) {

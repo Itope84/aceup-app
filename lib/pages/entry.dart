@@ -1,29 +1,12 @@
+import 'package:aceup/pages/json-classes/user.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'main_screen.dart';
 // import '../widgets/icon_badge.dart';
 import '../pages/auth.dart';
 import '../pages/select-avatar.dart';
 
 class Entry extends StatefulWidget {
-  static int initialPage() {
-    Map pagesIndex = {
-      'auth': 0,
-      'selectAvatar': 1,
-      'main': 2
-    };
-
-    // check if user is logged in
-    if(3 - 1 == 1) {
-      // check if user has selected avatar, if so
-      // return pagesIndex['main'];
-      // else
-      // return pagesIndex['selectAvatar'];
-      
-    }
-    // check if user is
-    return pagesIndex['auth'];
-  }
-
   @override
   _EntryState createState() => _EntryState();
 }
@@ -34,31 +17,63 @@ class _EntryState extends State<Entry> {
     super.initState();
   }
 
-  PageController _pageController = PageController(initialPage: Entry.initialPage());
-  // int _page = 0;
+  final storage = new FlutterSecureStorage();
 
-  void onLogIn() {
-    setState(() {
-      _pageController.jumpToPage(1);
-    });
+  Future<PageController> getInitialPage() async {
+    String token = await storage.read(key: 'token');
+    List<User> users = await User.users();
+    PageController _pageController;
+    Map pagesIndex = {'auth': 0, 'selectAvatar': 1, 'main': 2};
+
+    if (token != null && users.length > 0 && users.last.username != null) {
+      User user = users.last;
+      if (user.avatarId != null) {
+        _pageController = PageController(initialPage: pagesIndex['main']);
+      } else {
+        _pageController =
+            PageController(initialPage: pagesIndex['selectAvatar']);
+      }
+    } else {
+      _pageController = PageController(initialPage: pagesIndex['auth']);
+    }
+    return _pageController;
   }
 
-  void goToMain() {
-    setState(() {
-      _pageController.jumpToPage(2);
-    });
+  // int _page = 0;
+
+  Function goToPage(int page, PageController controller) {
+    return () {
+      setState(() {
+        controller.jumpToPage(page);
+      });
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        physics: NeverScrollableScrollPhysics(),
-        controller: _pageController,
-        // onPageChanged: onPageChanged,
-        // bogus, simply generates 4 pages, all of them is home shikena
-        children: [AuthScreen(loginHandler: onLogIn), SelectAvatarScreen(onSelect: goToMain,), MainScreen()],
-      ),
-    );
+        body: FutureBuilder(
+      future: getInitialPage(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          PageController _pageController = snapshot.data;
+          return PageView(
+            physics: NeverScrollableScrollPhysics(),
+            controller: _pageController,
+            // onPageChanged: onPageChanged,
+            // bogus, simply generates 4 pages, all of them is home shikena
+            children: [
+              AuthScreen(loginHandler: goToPage(1, _pageController)),
+              SelectAvatarScreen(
+                onSelect: goToPage(2, _pageController),
+              ),
+              MainScreen()
+            ],
+          );
+        } else {
+          return Container();
+        }
+      },
+    ));
   }
 }

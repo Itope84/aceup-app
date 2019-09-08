@@ -1,7 +1,8 @@
+import 'package:aceup/pages/topic/introduction.dart';
 import 'package:aceup/util/const.dart';
 import 'package:aceup/widgets/screen-title.dart';
 import 'package:flutter/material.dart';
-import 'details.dart';
+// import 'details.dart';
 
 class Learn extends StatefulWidget {
   // final changeThemeHandler;
@@ -26,8 +27,7 @@ class _LearnState extends State<Learn> {
             padding: EdgeInsets.only(top: 10, left: 20.0, right: 20.0),
             margin: EdgeInsets.only(bottom: 30.0),
             alignment: Alignment.center,
-            child: InkWell(
-              child: Container(
+            child: Container(
                 width: MediaQuery.of(context).size.width * 0.85,
                 child: Column(
                   children: <Widget>[
@@ -60,16 +60,6 @@ class _LearnState extends State<Learn> {
                   ],
                 ),
               ),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (BuildContext context) {
-                      return Details();
-                    },
-                  ),
-                );
-              },
-            ),
           ),
 
           // Body of the page
@@ -167,7 +157,7 @@ class _LearnState extends State<Learn> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (BuildContext context) {
-                      return Details();
+                      return Introduction();
                     },
                   ),
                 );

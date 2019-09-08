@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:aceup/util/const.dart';
 import 'package:flutter_html/rich_text_parser.dart';
 import 'package:flutter_tex/flutter_tex.dart';
 import 'package:flutter/material.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as parser;
+import 'package:photo_view/photo_view.dart';
 
 class HtmlOldParser extends StatelessWidget {
   HtmlOldParser({
@@ -298,6 +301,7 @@ class HtmlOldParser extends StatelessWidget {
             ),
             style: const TextStyle(
               fontFamily: 'monospace',
+              color: Colors.red,
             ),
           );
         case "data":
@@ -395,6 +399,7 @@ class HtmlOldParser extends StatelessWidget {
             ),
             style: const TextStyle(
               fontSize: 28.0,
+              color: Color(0xff475472),
               fontWeight: FontWeight.bold,
             ),
           );
@@ -409,6 +414,7 @@ class HtmlOldParser extends StatelessWidget {
             ),
             style: const TextStyle(
               fontSize: 21.0,
+              color: Color(0xff475472),
               fontWeight: FontWeight.bold,
             ),
           );
@@ -423,6 +429,7 @@ class HtmlOldParser extends StatelessWidget {
             ),
             style: const TextStyle(
               fontSize: 16.0,
+              color: Color(0xff475472),
               fontWeight: FontWeight.bold,
             ),
           );
@@ -437,6 +444,7 @@ class HtmlOldParser extends StatelessWidget {
             ),
             style: const TextStyle(
               fontSize: 14.0,
+              color: Color(0xff475472),
               fontWeight: FontWeight.bold,
             ),
           );
@@ -451,6 +459,7 @@ class HtmlOldParser extends StatelessWidget {
             ),
             style: const TextStyle(
               fontSize: 12.0,
+              color: Color(0xff475472),
               fontWeight: FontWeight.bold,
             ),
           );
@@ -465,6 +474,7 @@ class HtmlOldParser extends StatelessWidget {
             ),
             style: const TextStyle(
               fontSize: 10.0,
+              color: Color(0xff475472),
               fontWeight: FontWeight.bold,
             ),
           );
@@ -503,15 +513,74 @@ class HtmlOldParser extends StatelessWidget {
                       context,
                       onError: onImageError,
                     );
-                    return Image.memory(base64.decode(
-                        node.attributes['src'].split("base64,")[1].trim()));
+                    return Container(
+                      constraints: new BoxConstraints(
+                        maxHeight: 150,
+                      ),
+                      child: PhotoView(
+                        imageProvider: MemoryImage(base64.decode(
+                            node.attributes['src'].split("base64,")[1].trim())),
+                      ),
+                    );
                   }
                   precacheImage(
                     NetworkImage(node.attributes['src']),
                     context,
                     onError: onImageError,
                   );
-                  return Image.network(node.attributes['src']);
+
+                  // let's get the image width from the url, we're using cloudinary!
+                  String widthstmt = _allStringMatches(
+                                  node.attributes['src'], RegExp(r'w_\d+'))
+                              .length !=
+                          0
+                      ? _allStringMatches(
+                              node.attributes['src'], RegExp(r'w_\d+'))
+                          .elementAt(0)
+                      : null;
+                  double width = widthstmt != null
+                      ? double.parse(RegExp(r'\d+').firstMatch(widthstmt)[0])
+                      : 0;
+
+                  String heightstmt = _allStringMatches(
+                                  node.attributes['src'], RegExp(r'h_\d+'))
+                              .length !=
+                          0
+                      ? _allStringMatches(
+                              node.attributes['src'], RegExp(r'h_\d+'))
+                          .elementAt(0)
+                      : null;
+                  double height = widthstmt != null
+                      ? double.parse(RegExp(r'\d+').firstMatch(heightstmt)[0])
+                      : 0;
+
+                  double maxHeight = (height != 0 && width != 0)
+                      ? height / width * MediaQuery.of(context).size.width
+                      : 100;
+
+                  if (node.attributes['data-zoom'] == 'zoomable') {
+                    return Container(
+                      constraints: new BoxConstraints(
+                        maxHeight: maxHeight + 30,
+                      ),
+                      child: ClipRect(
+                          child: PhotoView(
+                        backgroundDecoration:
+                            BoxDecoration(color: Constants.mainWhite),
+                        imageProvider: CachedNetworkImageProvider(
+                          node.attributes['src'],
+                        ),
+                      )),
+                    );
+                  } else {
+                    return CachedNetworkImage(
+                      imageUrl: node.attributes['src'],
+                      placeholder: (context, url) => CircularProgressIndicator(),
+                      width: width < MediaQuery.of(context).size.width
+                          ? width
+                          : MediaQuery.of(context).size.width,
+                    );
+                  }
                 } else if (node.attributes['alt'] != null) {
                   //Temp fix for https://github.com/flutter/flutter/issues/736
                   if (node.attributes['alt'].endsWith(" ")) {
@@ -730,7 +799,6 @@ class HtmlOldParser extends StatelessWidget {
                 ),
                 textDirection: TextDirection.ltr);
             painter.layout();
-            //print(painter.size);
 
             //Get the height from the default text
             var height = painter.size.height *
@@ -745,12 +813,9 @@ class HtmlOldParser extends StatelessWidget {
                 ),
                 textDirection: TextDirection.ltr);
             painter.layout();
-            //print(painter.size);
 
             //Get the width from the reduced/positioned text
             var width = painter.size.width;
-
-            //print("Width: $width, Height: $height");
 
             return DefaultTextStyle.merge(
               child: Wrap(
@@ -890,16 +955,21 @@ class HtmlOldParser extends StatelessWidget {
 
       // equations support
       if (finalText.contains("\\\(")) {
-        print(finalText);
-          return TeXView(teXHTML: finalText);
-          
+        return TeXView(teXHTML: finalText);
       }
 
       if (finalText.endsWith(" ")) {
         return Container(
-            padding: EdgeInsets.only(right: 2.0), child: Text(finalText));
+            padding: EdgeInsets.only(right: 2.0),
+            child: Text(
+              finalText,
+              style: TextStyle(height: 1.4),
+            ));
       } else {
-        return Text(finalText);
+        return Text(
+          finalText,
+          style: TextStyle(height: 1.4),
+        );
       }
     }
     return Wrap();
@@ -909,6 +979,11 @@ class HtmlOldParser extends StatelessWidget {
     return nodeList.map((node) {
       return _parseNode(node);
     }).toList();
+  }
+
+  Iterable<String> _allStringMatches(String text, RegExp regExp) {
+    var m = regExp.allMatches(text).map((m) => m[0]);
+    return m;
   }
 
   String style(String text) {

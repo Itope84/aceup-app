@@ -14,7 +14,7 @@ class Constants {
   static Color lightAccent = Colors.blueGrey[900];
   static Color darkAccent = Colors.white;
   static Color lightBG = Color(0xfffcfcff);
-  static Color darkBG = Colors.black;
+  static Color darkBG = Color(0xff475472);
   static Color badgeColor = Colors.red;
 
   static ThemeData customTheme(String mainHexCode, String secondaryHexCode) {
@@ -25,7 +25,7 @@ class Constants {
             body2: TextStyle(fontFamily: "karla")),
         textTheme: TextTheme(
             title: TextStyle(color: HexColor(mainHexCode), fontFamily: "karla"),
-            body1: TextStyle(fontFamily: "karla"),
+            body1: TextStyle(fontFamily: "karla",),
             body2: TextStyle(fontFamily: "karla")),
         backgroundColor: mainWhite,
         primaryColor: HexColor(mainHexCode),
@@ -107,6 +107,14 @@ class Constants {
     accentColor: darkAccent,
     scaffoldBackgroundColor: darkBG,
     cursorColor: darkAccent,
+    primaryTextTheme: TextTheme(
+        title: TextStyle(color: mainWhite, fontFamily: "karla"),
+        body1: TextStyle(fontFamily: "karla"),
+        body2: TextStyle(fontFamily: "karla")),
+    textTheme: TextTheme(
+        title: TextStyle(color: mainWhite, fontFamily: "karla"),
+        body1: TextStyle(fontFamily: "karla"),
+        body2: TextStyle(fontFamily: "karla")),
     appBarTheme: AppBarTheme(
       elevation: 0,
       textTheme: TextTheme(
@@ -122,60 +130,7 @@ class Constants {
     ),
   );
 
-  static Widget defaultInputLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 40.0),
-      child: new Text(
-        text,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Constants.mainPrimary,
-          fontSize: 15.0,
-        ),
-      ),
-    );
-  }
-
-  static Widget defaultInputWidget(
-      {String label,
-      TextInputType type: TextInputType.text,
-      bool disabled: false,
-      String placeholder,
-      bool obscureText: false,
-      TextEditingController controller}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        defaultInputLabel(label),
-        Container(
-          margin: const EdgeInsets.only(left: 40.0, right: 40.0, top: 0.0),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                  color: Constants.mainPrimary,
-                  width: 0.5,
-                  style: BorderStyle.solid),
-            ),
-          ),
-          padding: const EdgeInsets.only(left: 0.0, right: 10.0),
-          child: TextField(
-            obscureText: obscureText,
-            keyboardType: type,
-            controller: controller,
-            enabled: !disabled,
-            textAlign: TextAlign.left,
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: placeholder,
-              hintStyle: TextStyle(color: Colors.grey),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
+  
   static Widget inputStyle2(TextEditingController controller) {
     return Padding(
       padding: EdgeInsets.all(20),

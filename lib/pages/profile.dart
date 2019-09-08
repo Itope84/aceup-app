@@ -1,3 +1,4 @@
+import 'package:aceup/widgets/return-button.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -216,27 +217,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-          Positioned(
-            top: 50,
-            left: 0.0,
-            width: 60.0,
-            child: RaisedButton(
-              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 0.0),
-              elevation: 0.0,
-              color: Theme.of(context).primaryColor,
-              child: Icon(
-                Icons.arrow_back,
-                color: Colors.white,
-              ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(30.0),
-                      bottomRight: Radius.circular(30.0))),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
+          ReturnButton(onPressed: () {
+            Navigator.pop(context);
+          }),
           Positioned(
             top: 50,
             width: 60.0,

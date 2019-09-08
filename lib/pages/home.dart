@@ -1,18 +1,117 @@
+import 'package:aceup/models/top_level_data_model.dart';
+import 'package:aceup/pages/json-classes/course-profile.dart';
 import 'package:aceup/util/const.dart';
 import 'package:aceup/widgets/screen-title.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
 import 'details.dart';
 
 class Home extends StatefulWidget {
-  // final changeThemeHandler;
+  final Function gotoPage;
 
-  // Home(this.changeThemeHandler);
+  Home({this.gotoPage});
   @override
   _HomeState createState() => _HomeState();
 }
 
+
 class _HomeState extends State<Home> {
   // final TextEditingController _searchControl = new TextEditingController();
+
+  Widget activeTopic(CourseProfile profile) {
+    return Container(
+      padding: EdgeInsets.only(top: 10, left: 20, right: 20),
+      margin: EdgeInsets.only(bottom: 30.0),
+      child: InkWell(
+        child: Container(
+          child: Column(
+            children: <Widget>[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: CachedNetworkImageProvider(
+                          profile.course.featuredImage,
+                        )),
+                  ),
+                  height: 170,
+                  width: MediaQuery.of(context).size.width * 0.85,
+                  child: Container(
+                    padding: EdgeInsets.all(10.0),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            Color.fromRGBO(0, 0, 0, 0.5),
+                            Colors.transparent
+                          ]),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          profile.course.activeTopic != null ? profile.course.activeTopic.title : "",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                              fontSize: 20.0),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 7),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.85,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  profile.course.title.toUpperCase(),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                  maxLines: 2,
+                  textAlign: TextAlign.left,
+                ),
+              ),
+              SizedBox(height: 3),
+            ],
+          ),
+        ),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (BuildContext context) {
+                return Details();
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget placeholderCard({Widget child}) {
+    return Container(
+        height: 200.0,
+        margin:
+            EdgeInsets.only(bottom: 30.0, left: 30.0, right: 30.0, top: 20.0),
+        width: MediaQuery.of(context).size.width,
+        padding: EdgeInsets.all(10.0),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(color: Color.fromRGBO(30, 30, 30, 0.3), blurRadius: 0.3)
+            ],
+            color: Constants.mainWhite),
+        child: child);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,78 +121,37 @@ class _HomeState extends State<Home> {
           ScreenTitle("Continue Learning"),
 
           // Latest topic
-          Container(
-            padding: EdgeInsets.only(top: 10, left: 20,right: 20),
-            margin: EdgeInsets.only(bottom: 30.0),
-              child: InkWell(
-                child: Container(
-                  child: Column(
-                    children: <Widget>[
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: AssetImage("assets/chemistry.png")),
-                          ),
-                          height: 170,
-                          width: MediaQuery.of(context).size.width * 0.85,
-                          child: Container(
-                            padding: EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [
-                                    Color.fromRGBO(0, 0, 0, 0.5),
-                                    Colors.transparent
-                                  ]),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  "An introduction to the undiscovered era of narcissistic German Navi",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                      fontSize: 20.0),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 7),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.85,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          "CHM101 - INTRODUCTORY CHEMISTRY I",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                          maxLines: 2,
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
-                      SizedBox(height: 3),
-                    ],
-                  ),
-                ),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return Details();
+          ScopedModelDescendant<TopLevelDataModel>(
+            builder: (context, widget, model) {
+              return model.activeCourseProfile == null
+                  ? FutureBuilder(
+                      future: model.getActiveCourseProfileFromDb(),
+                      builder: (context, snapshot) {
+                        switch (snapshot.connectionState) {
+                          case ConnectionState.active:
+                          case ConnectionState.waiting:
+                            return placeholderCard(
+                                child: Center(
+                              child: SizedBox(
+                                width: 50,
+                                height: 50,
+                                child: CircularProgressIndicator(),
+                              ),
+                            ));
+                          case ConnectionState.done:
+                            return activeTopic(snapshot.data);
+
+                          default:
+                            return placeholderCard(
+                              child: Center(
+                                child: Text("An error occured"),
+                              ),
+                            );
+                        }
                       },
-                    ),
-                  );
-                },
-              ),
+                    )
+                  : activeTopic(model.activeCourseProfile);
+            },
           ),
 
           // Playground
@@ -150,13 +208,7 @@ class _HomeState extends State<Home> {
                   ),
                 ),
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return Details();
-                      },
-                    ),
-                  );
+                  widget.gotoPage(2);
                 },
               ),
             ),
