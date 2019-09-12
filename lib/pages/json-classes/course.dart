@@ -11,6 +11,7 @@ class Course {
   String createdAt;
   String updatedAt;
   Topic activeTopic;
+  List<Topic> topics;
 
   Course(
       {this.id,

@@ -65,16 +65,41 @@ class DB {
             id    INTEGER NOT NULL PRIMARY KEY
             ,topic_id   INTEGER NOT NULL
             ,body   TEXT  NOT NULL
-            ,options    BLOB NOT NULL
+            ,options BLOB
             ,difficulty   TEXT NOT NULL
-            ,explanation    TEXT NOT NULL
+            ,explanation    TEXT
+          );
+        """);
+
+        db.execute("""
+          CREATE TABLE IF NOT EXISTS slides(
+            id    INTEGER NOT NULL PRIMARY KEY
+            ,topic_id   INTEGER NOT NULL
+            ,"index"    INTEGER NOT NULL
+            ,body   TEXT NOT NULL
+            ,options BLOB
+            ,is_question   INTEGER  DEFAULT 0
+            ,explanation    TEXT
+          );
+        """);
+
+      },
+      onUpgrade: (db, prevVersion, currVersion) {
+        print('creating');
+        db.execute("""
+          CREATE TABLE IF NOT EXISTS quizzes(
+            id TEXT NOT NULL PRIMARY KEY
+            ,type TEXT NOT NULL
+            ,topic_id INTEGER
+            ,course_id INTEGER
+            ,questions_map BLOB
+            ,submitted INTEGER DEFAULT 0
           );
         """);
       },
-      onUpgrade: (db, prevVersion, currVersion) {},
       // Set the version. This executes the onCreate function and provides a
       // path to perform database upgrades and downgrades.
-      version: 1,
+      version: 4,
     );
 
     return database;

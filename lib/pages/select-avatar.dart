@@ -91,10 +91,13 @@ class _SelectAvatarScreenState extends State<SelectAvatarScreen> {
         onTap: _selected != null
             ? null
             : () async {
-                await selectAvatar(index);
-                setState(() {
-                  _selected = null;
-                });
+                try {
+                  await selectAvatar(index);
+                } finally {
+                  setState(() {
+                    _selected = null;
+                  });
+                }
               },
         child: _selected == index
             ? Container(

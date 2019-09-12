@@ -1,9 +1,11 @@
-import 'package:aceup/models/top_level_data_model.dart';
+import 'package:aceup/models/main_model.dart';
 import 'package:aceup/pages/json-classes/course-profile.dart';
+import 'package:aceup/pages/topic/slides.dart';
 import 'package:aceup/util/const.dart';
 import 'package:aceup/widgets/screen-title.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'details.dart';
 
@@ -15,11 +17,10 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
-
 class _HomeState extends State<Home> {
   // final TextEditingController _searchControl = new TextEditingController();
 
-  Widget activeTopic(CourseProfile profile) {
+  Widget activeTopic(CourseProfile profile, MainModel model) {
     return Container(
       padding: EdgeInsets.only(top: 10, left: 20, right: 20),
       margin: EdgeInsets.only(bottom: 30.0),
@@ -55,7 +56,9 @@ class _HomeState extends State<Home> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          profile.course.activeTopic != null ? profile.course.activeTopic.title : "",
+                          profile.course.activeTopic != null
+                              ? profile.course.activeTopic.title
+                              : "",
                           style: TextStyle(
                               fontWeight: FontWeight.w500,
                               color: Colors.white,
@@ -84,11 +87,12 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
-        onTap: () {
+        onTap: () async {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder: (BuildContext context) {
-                return Details();
+                return SlideContainer(
+                    topic: profile.course.activeTopic);
               },
             ),
           );
@@ -121,7 +125,7 @@ class _HomeState extends State<Home> {
           ScreenTitle("Continue Learning"),
 
           // Latest topic
-          ScopedModelDescendant<TopLevelDataModel>(
+          ScopedModelDescendant<MainModel>(
             builder: (context, widget, model) {
               return model.activeCourseProfile == null
                   ? FutureBuilder(
@@ -139,7 +143,30 @@ class _HomeState extends State<Home> {
                               ),
                             ));
                           case ConnectionState.done:
-                            return activeTopic(snapshot.data);
+                            if (snapshot.hasData) {
+                              return activeTopic(snapshot.data, model);
+                            }
+                            return placeholderCard(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: <Widget>[
+                                  SizedBox(
+                                    width: 50.0,
+                                    height: 50.0,
+                                    child: Icon(
+                                      MdiIcons.alertCircle,
+                                      size: 50.0,
+                                      color: Colors.blueGrey,
+                                    ),
+                                  ),
+                                  Text(
+                                    "You need internet to load the app the first time.",
+                                    textAlign: TextAlign.center,
+                                  )
+                                ],
+                              ),
+                            );
 
                           default:
                             return placeholderCard(
@@ -150,7 +177,7 @@ class _HomeState extends State<Home> {
                         }
                       },
                     )
-                  : activeTopic(model.activeCourseProfile);
+                  : activeTopic(model.activeCourseProfile, model);
             },
           ),
 

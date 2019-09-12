@@ -12,7 +12,7 @@ class MainHeader extends StatelessWidget {
       text,
       style: TextStyle(
           color: color != null ? color : Theme.of(context).accentColor,
-          fontSize: fontSize != null ? fontSize : 30.0,
+          fontSize: fontSize != null ? fontSize : 25.0,
           fontWeight: FontWeight.w600),
       maxLines: 3,
       overflow: TextOverflow.ellipsis,

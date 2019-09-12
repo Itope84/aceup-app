@@ -1,9 +1,13 @@
+import 'package:aceup/pages/json-classes/option.dart';
 import 'package:aceup/util/custom_html.dart';
 import 'package:flutter/material.dart';
 
 class QuestionWidget extends StatefulWidget {
-  final Map question;
-  QuestionWidget({this.question});
+  final dynamic question;
+  final Function onAnswer;
+  final Option attempt;
+  final bool disableOptions;
+  QuestionWidget({this.question, this.onAnswer, this.disableOptions, this.attempt});
   @override
   _QuestionWidgetState createState() => _QuestionWidgetState();
 }
@@ -14,7 +18,7 @@ class _QuestionWidgetState extends State<QuestionWidget> {
   @override
   Widget build(BuildContext context) {
     List<Widget> _options = new List<Widget>();
-    for (var i = 0; i < widget.question['options'].length; i++) {
+    for (var i = 0; i < widget.question.options.length; i++) {
       _options.add(singleOption(i));
     }
 
@@ -22,7 +26,7 @@ class _QuestionWidgetState extends State<QuestionWidget> {
       child: Column(
         children: <Widget>[
           CustomHtml(
-            data: widget.question['body'],
+            data: widget.question.body,
             useRichText: false,
           ),
           SizedBox(
@@ -37,7 +41,7 @@ class _QuestionWidgetState extends State<QuestionWidget> {
   }
 
   Widget singleOption(index) {
-    Map _option = widget.question['options'][index];
+    Option _option = widget.question.options[index];
     return InkWell(
       child: Container(
         margin: EdgeInsets.only(bottom: 20.0),
@@ -46,7 +50,9 @@ class _QuestionWidgetState extends State<QuestionWidget> {
             boxShadow: [
               BoxShadow(color: Color.fromRGBO(30, 30, 30, 0.3), blurRadius: 0.3)
             ],
-            color: _selected != null && _option['is_answer'] ? Theme.of(context).primaryColor : _selected == index ? Colors.red : Colors.white70),
+            color: widget.disableOptions ? (_option.isAnswer 
+                ? Theme.of(context).primaryColor
+                : _selected == index || (widget.attempt != null && widget.attempt.key == _option.key) ? Colors.red : Colors.white70) : _selected == index ? Colors.orange[300] : Colors.white70),
         padding: EdgeInsets.symmetric(horizontal: 15.0),
         child: Container(
             padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 15.0),
@@ -54,25 +60,41 @@ class _QuestionWidgetState extends State<QuestionWidget> {
               children: <Widget>[
                 Text(
                   String.fromCharCode(index + 65),
-                  
-                  style: (_selected != null && _option['is_answer']) || _selected == index ? TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white) : TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                  style: (widget.disableOptions && _option.isAnswer) ||
+                          _selected == index || (widget.attempt != null && widget.attempt.key == _option.key)
+                      ? TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)
+                      : TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                 ),
                 SizedBox(
                   width: 10.0,
                 ),
                 Expanded(
-                  child: CustomHtml(data: _option['body']),
-                )
+                  child: CustomHtml(
+                      data: _option.body,
+                      useRichText: false,
+                      textStyle: (widget.disableOptions && _option.isAnswer) ||
+                          _selected == index || (widget.attempt != null && widget.attempt.key == _option.key)
+                          ? TextStyle(color: Colors.white)
+                          : TextStyle(),
+                      ),
+                ),
               ],
             )),
       ),
       onTap: () {
-        if(_selected != null) {
+        if (widget.disableOptions) {
           return;
         }
         setState(() {
           _selected = index;
         });
+        if (widget.onAnswer != null) {
+          print(_option.key);
+          widget.onAnswer(_option.key);
+        }
       },
     );
   }

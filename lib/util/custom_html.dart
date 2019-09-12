@@ -17,7 +17,7 @@ class CustomHtml extends StatelessWidget{
     this.customTextStyle,
     this.customTextAlign,
     this.blockSpacing = 14.0,
-    this.useRichText = true,
+    this.useRichText = false,
     this.onImageError,
     this.linkStyle = const TextStyle(
         decoration: TextDecoration.underline,
@@ -25,7 +25,10 @@ class CustomHtml extends StatelessWidget{
         decorationColor: Colors.blueAccent),
     this.imageProperties,
     this.onImageTap,
+    this.textStyle,
     this.showImages = true,
+    this.htmlBackgroundColor,
+    this.htmlTextColor,
   });
 
   final String data;
@@ -38,11 +41,14 @@ class CustomHtml extends StatelessWidget{
   final bool useRichText;
   final ImageErrorListener onImageError;
   final TextStyle linkStyle;
+  final TextStyle textStyle;
 
   /// Properties for the Image widget that gets rendered by the rich text parser
   final ImageProperties imageProperties;
   final OnImageTap onImageTap;
   final bool showImages;
+  final String htmlBackgroundColor;
+  final String htmlTextColor;
 
   /// Either return a custom widget for specific node types or return null to
   /// fallback to the default rendering.
@@ -85,6 +91,9 @@ class CustomHtml extends StatelessWidget{
                 onImageError: onImageError,
                 linkStyle: linkStyle,
                 showImages: showImages,
+                customTextStyle: textStyle,
+                htmlBackgroundColor: htmlBackgroundColor,
+                htmlTextColor: htmlTextColor
               ),
       ),
     );

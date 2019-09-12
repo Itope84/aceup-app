@@ -59,11 +59,18 @@ class CourseProfile {
       CourseProfile cp = CourseProfile.fromJson(results[i]);
       return cp;
     });
+    
+    Future<List<CourseProfile>> attachCourses () async {
+      List<CourseProfile> profs = [];
+      for (var i = 0; i < profiles.length; i++) {
+        profs.add(profiles[i]);
+        Course course = await Course.whereId(profiles[i].courseId);
+        profs[i].course = course;
+      }
+      return profs;
+    };
 
-    profiles.forEach((profile) async {
-      Course course = await Course.whereId(profile.courseId);
-      profile.course = course;
-    });
+    profiles = await attachCourses();
 
     return profiles;
   }

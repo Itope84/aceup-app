@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 class Pagination extends StatefulWidget {
   final Function navigationHandler;
 
-  Pagination({this.navigationHandler});
+  final int total, currentPage;
+
+  Pagination({this.navigationHandler, this.total, this.currentPage});
 
   @override
   _PaginationState createState() => _PaginationState();
@@ -30,23 +32,28 @@ class _PaginationState extends State<Pagination> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        onPressed: () {},
+        onPressed: () {
+          widget.navigationHandler(widget.currentPage - 1);
+        },
       )
     ];
 
-    for (var i = 1; i <= pageCount; i++) {
+    int first = widget.currentPage < 3 ? 1 : widget.currentPage - 2;
+    for (var i = first; i <= (first + 3 > widget.total ? widget.total : first + 3); i++) {
       buttons.add(
         FloatingActionButton(
           heroTag: 'pageBtn' + i.toString(),
           mini: true,
           child: Text(
             i.toString(),
-            style: TextStyle(color: Theme.of(context).accentColor),
+            style: TextStyle(color: i == widget.currentPage ? Theme.of(context).primaryColor : Theme.of(context).accentColor),
           ),
           backgroundColor: Colors.transparent,
           focusColor: Colors.blueGrey,
           elevation: 0,
-          onPressed: widget.navigationHandler
+          onPressed: () {
+            widget.navigationHandler(i - 1);
+          }
         ),
       );
     }
@@ -60,7 +67,9 @@ class _PaginationState extends State<Pagination> {
       ),
       backgroundColor: Colors.transparent,
       elevation: 0,
-      onPressed: () {},
+      onPressed: () {
+        widget.navigationHandler(widget.currentPage + 1);
+      },
     ));
     return buttons;
   }

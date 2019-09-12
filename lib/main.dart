@@ -1,8 +1,11 @@
+// import 'package:aceup/connectivity_service.dart';
 import 'package:aceup/models/theme_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// import 'package:provider/provider.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'pages/entry.dart';
+// import 'package:aceup/enums/connectivity_status.dart';
 import 'util/const.dart';
 
 void main() async {
@@ -31,9 +34,9 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ScopedModel<ThemeModel>(
-        model: _model,
-        child:
-            ScopedModelDescendant<ThemeModel>(builder: (context, child, model) {
+      model: _model,
+      child: ScopedModelDescendant<ThemeModel>(
+        builder: (context, child, model) {
           SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
           SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
               statusBarColor:
@@ -47,9 +50,13 @@ class _MyAppState extends State<MyApp> {
             debugShowCheckedModeBanner: false,
             title: Constants.appName,
             // theme: isDark ? Constants.darkTheme : Constants.lightTheme,
-            theme: model.isDark ? Constants.darkTheme : Constants.customTheme(primaryColor, secondaryColor),
+            theme: model.isDark
+                ? Constants.darkTheme
+                : Constants.customTheme(primaryColor, secondaryColor),
             home: Entry(),
           );
-        }));
+        },
+      ),
+    );
   }
 }

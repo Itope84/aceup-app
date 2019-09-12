@@ -1,0 +1,65 @@
+import 'package:aceup/util/database.dart';
+import 'package:sqflite/sqlite_api.dart';
+
+class Option {
+  String key;
+  String body;
+  bool isAnswer;
+
+  Option({this.key, this.body, this.isAnswer});
+
+  Option.fromJson(Map<String, dynamic> json) {
+    key = json['key'];
+    body = json['body'].replaceAllMapped(
+        RegExp(r'<span class="math-tex"[^>]*>((.|\n)*?)</span>'), (match) {
+      return '${match.group(1)}';
+    });
+    isAnswer = json['is_answer'] == null || json['is_answer'] == 0 ? false : true;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['key'] = this.key;
+    data['body'] = this.body;
+    data['is_answer'] = this.isAnswer == null || !this.isAnswer ? 0 : 1;
+    return data;
+  }
+
+  Future<void> insertToDb(int parent_id, String parent_type) async {
+    // Get a reference to the database.
+
+    Future database = DB.initialize();
+    final Database db = await database;
+    
+    Map<String, dynamic> option = this.toJson();
+
+    option['parent_id'] = parent_id;
+    option['parent_type'] = parent_type;
+
+    await db.insert(
+      'options',
+      option,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  static Future<List<Option>> whereQuery(int parent_id, String parent_type) async {
+    // Get a reference to the database.
+
+    Future database = DB.initialize();
+    final Database db = await database;
+
+    List<Map<String, dynamic>> results = await db.query(
+      'options',
+      where: "parent_id = ? AND parent_type = ?",
+      whereArgs: [parent_id, parent_type],
+    );
+
+    List<Option> options = List.generate(results.length, (i) {
+      Option t = Option.fromJson(results[i]);
+      return t;
+    });
+
+    return options;
+  }
+}

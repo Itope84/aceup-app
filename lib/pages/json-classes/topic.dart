@@ -1,4 +1,6 @@
 import 'package:aceup/pages/json-classes/course.dart';
+import 'package:aceup/pages/json-classes/question.dart';
+import 'package:aceup/pages/json-classes/slide.dart';
 import 'package:aceup/util/database.dart';
 import 'package:sqflite/sqlite_api.dart';
 
@@ -10,6 +12,9 @@ class Topic {
   String introduction;
   bool completed;
   Course course;
+  List<Slide> slides;
+  List<Question> questions;
+  Slide lastSlide;
 
   Topic(
       {this.id,
@@ -18,16 +23,19 @@ class Topic {
       this.title,
       this.introduction,
       this.completed,
-      this.course
-      });
+      this.course});
 
   Topic.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     courseId = json['course_id'];
     index = json['index'];
     title = json['title'];
-    introduction = json['introduction'];
-    completed = json['completed'] == null || json['completed'] == 0 ? false : true;
+    introduction = json['introduction'].replaceAllMapped(
+        RegExp(r'<span class="math-tex"[^>]*>((.|\n)*?)</span>'), (match) {
+      return '${match.group(1)}';
+    });
+    completed =
+        json['completed'] == null || json['completed'] == 0 ? false : true;
   }
 
   Future<void> insertToDb() async {
@@ -60,20 +68,15 @@ class Topic {
     Future database = DB.initialize();
     final Database db = await database;
 
-    List<Map<String, dynamic>> results = await db.query(
-      'topics',
-      where: "id = ?",
-      whereArgs: [id],
-      limit: 1
-    );
+    List<Map<String, dynamic>> results =
+        await db.query('topics', where: "id = ?", whereArgs: [id], limit: 1);
 
     Map<String, dynamic> t = results.length > 0 ? results[0] : null;
 
-    
     Topic topic = Topic.fromJson(t);
 
     Course course = await Course.whereId(topic.courseId);
-      topic.course = course;
+    topic.course = course;
 
     return topic;
   }
@@ -84,16 +87,11 @@ class Topic {
     Future database = DB.initialize();
     final Database db = await database;
 
-    List<Map<String, dynamic>> results = await db.query(
-      'topics',
-      where: "course_id = ?",
-      whereArgs: [courseId],
-      limit: 1
-    );
+    List<Map<String, dynamic>> results = await db.query('topics',
+        where: "course_id = ?", whereArgs: [courseId], limit: 1);
 
     Map<String, dynamic> t = results.length > 0 ? results[0] : null;
 
-    
     Topic topic = Topic.fromJson(t);
 
     return topic;

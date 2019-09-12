@@ -35,6 +35,8 @@ dependencies:
   shared_preferences: ^0.5.3+4
   path:
   http: ^0.12.0+2
+  # provider: ^2.0.1
+  # connectivity: ^0.4.3+1
 
 dev_dependencies:
   flutter_launcher_icons: "^0.7.2"
@@ -73,6 +75,9 @@ flutter:
     - assets/avatars/009.png
     - assets/avatars/010.png
     - assets/quiz-icon.png
+    - assets/hurray.png
+    - assets/gt60.png
+    - assets/lt60.png
     - assets/aceup-circle-icon.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
@@ -106,3 +111,8 @@ flutter_icons:
   android: "launcher_icon" 
   ios: true
   image_path: "assets/aceup-circle-icon.png"
+
+analyzer:
+  strong-mode: true
+  language:
+    enableSuperMixins: true

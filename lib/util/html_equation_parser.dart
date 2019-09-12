@@ -16,12 +16,15 @@ class HtmlOldParser extends StatelessWidget {
     this.customRender,
     this.blockSpacing,
     this.html,
+    this.customTextStyle,
+    this.htmlTextColor,
     this.onImageError,
     this.linkStyle = const TextStyle(
         decoration: TextDecoration.underline,
         color: Colors.blueAccent,
         decorationColor: Colors.blueAccent),
     this.showImages = true,
+    this.htmlBackgroundColor,
   });
 
   final double width;
@@ -32,7 +35,10 @@ class HtmlOldParser extends StatelessWidget {
   final String html;
   final ImageErrorListener onImageError;
   final TextStyle linkStyle;
+  final TextStyle customTextStyle;
   final bool showImages;
+  final String htmlBackgroundColor;
+  final String htmlTextColor;
 
   static const _supportedElements = [
     "a",
@@ -523,11 +529,11 @@ class HtmlOldParser extends StatelessWidget {
                       ),
                     );
                   }
-                  precacheImage(
-                    NetworkImage(node.attributes['src']),
-                    context,
-                    onError: onImageError,
-                  );
+                  // precacheImage(
+                  //   NetworkImage(node.attributes['src']),
+                  //   context,
+                  //   onError: onImageError,
+                  // );
 
                   // let's get the image width from the url, we're using cloudinary!
                   String widthstmt = _allStringMatches(
@@ -575,7 +581,8 @@ class HtmlOldParser extends StatelessWidget {
                   } else {
                     return CachedNetworkImage(
                       imageUrl: node.attributes['src'],
-                      placeholder: (context, url) => CircularProgressIndicator(),
+                      placeholder: (context, url) =>
+                          CircularProgressIndicator(),
                       width: width < MediaQuery.of(context).size.width
                           ? width
                           : MediaQuery.of(context).size.width,
@@ -955,7 +962,7 @@ class HtmlOldParser extends StatelessWidget {
 
       // equations support
       if (finalText.contains("\\\(")) {
-        return TeXView(teXHTML: finalText);
+        return TeXView(teXHTML: style(finalText),);
       }
 
       if (finalText.endsWith(" ")) {
@@ -963,12 +970,12 @@ class HtmlOldParser extends StatelessWidget {
             padding: EdgeInsets.only(right: 2.0),
             child: Text(
               finalText,
-              style: TextStyle(height: 1.4),
+              style: TextStyle(height: 1.4,).merge(customTextStyle),
             ));
       } else {
         return Text(
           finalText,
-          style: TextStyle(height: 1.4),
+          style: TextStyle(height: 1.4).merge(customTextStyle),
         );
       }
     }
@@ -988,7 +995,14 @@ class HtmlOldParser extends StatelessWidget {
 
   String style(String text) {
     return """
-    <div style="font-size: 20px; text-align: center;" class="has-equation">
+    <style>
+    body, * {
+      background-color: ${htmlBackgroundColor != null ? htmlBackgroundColor : 'transparent'} !important;
+      padding: 0;
+      margin: 0;
+    }
+    </style>
+    <div style="padding: 10px 10px 0px 10px; margin: 0px; background-color: ${htmlBackgroundColor != null ? htmlBackgroundColor : 'transparent'}; color: ${htmlTextColor != null ? htmlTextColor : 'inherit'}" class="has-equation">
     $text
     </div>
     """;
