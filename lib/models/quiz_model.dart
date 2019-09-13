@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:aceup/models/learn_model.dart';
 import 'package:aceup/models/main_model.dart';
 import 'package:aceup/models/top_level_data_model.dart';
+import 'package:aceup/pages/json-classes/course-profile.dart';
 import 'package:aceup/pages/json-classes/course.dart';
 import 'package:aceup/pages/json-classes/question.dart';
 import 'package:aceup/pages/json-classes/quiz.dart';
@@ -44,9 +45,11 @@ class QuizModel extends TopLevelDataModel {
         // you been offline forever bro
         print('from api');
         questions = await getQuizQuestionsFromApi(
-            type, topic != null ? topic.courseId : course.id);
+            type, topic != null ? topic.courseId : course.id, topicId: topic != null ? topic.id : null);
         questions.shuffle();
-        questions = questions.take(20).toList();
+        // TODO: fix bud: questions being fetched from db are not related to topic
+        int length = type == 'topic' ? 10 : type == 'quiz' ? 20 : 1;
+        questions = questions.take(length).toList();
       }
 
       quiz.map_questions = questions;
@@ -76,10 +79,16 @@ class QuizModel extends TopLevelDataModel {
 
     int score = 0;
 
+    CourseProfile profile = activeCourseProfile;
+
     quiz.getQuestionsAndAttemptsAlreadyLoaded.forEach((question) {
       score = question['selected_option'].isAnswer ? score + 1 : score;
+      profile.points += question['selected_option'].isAnswer
+          ? Quiz.scores[question['question'].difficulty]
+          : 0;
     });
 
+    await activeCourseProfile.insertToDb();
     await quiz.insertToDb();
 
     return score;
@@ -91,11 +100,11 @@ class QuizModel extends TopLevelDataModel {
 
   /// get quiz with questions from api
   Future<List<Question>> getQuizQuestionsFromApi(
-      String type, int courseId) async {
+      String type, int courseId, {int topicId}) async {
     Map<String, String> headers = await ApiRequest.headers();
 
     Response response = await get(
-        ApiRequest.BASE_URL + '/courses/$courseId/questions/',
+        ApiRequest.BASE_URL + '/courses/$courseId/questions/' + (topicId != null ? '?topic=${topicId.toString()}' : ''),
         headers: headers);
 
     int statusCode = response.statusCode;
@@ -124,12 +133,13 @@ class QuizModel extends TopLevelDataModel {
   Future<void> submitQuizzes() async {
     List<Quiz> quizzes = await Quiz.whereNotSubmitted();
 
-    Quiz quiz = quizzes.first;
-
-    print("fetching for quiz ${quiz.id}");
-    try {
-      // try submitting each quiz.
-      await quiz.submit();
-    } finally {}
+    for (int i = 0; i < quizzes.length; i++) {
+      Quiz quiz = quizzes[i];
+      try {
+        // try submitting each quiz.
+        print("fetching for quiz ${quiz.id}");
+        await quiz.submit();
+      } finally {}
+    }
   }
 }

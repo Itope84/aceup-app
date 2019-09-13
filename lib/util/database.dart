@@ -83,9 +83,6 @@ class DB {
           );
         """);
 
-      },
-      onUpgrade: (db, prevVersion, currVersion) {
-        print('creating');
         db.execute("""
           CREATE TABLE IF NOT EXISTS quizzes(
             id TEXT NOT NULL PRIMARY KEY
@@ -96,10 +93,23 @@ class DB {
             ,submitted INTEGER DEFAULT 0
           );
         """);
+
+        /// opponent_profile looks like {username: ___, avatar: ____}
+        /// questions_map lools like: {question_id, challenger_attempt, opponent_attempt}
+        db.execute("""
+          CREATE TABLE IF NOT EXISTS challenges(
+            id INTEGER NOT NULL PRIMARY KEY
+            ,course_id INTEGER NOT NULL
+            ,challenger_id INTEGER NOT NULL
+            ,questions_map BLOB
+            ,opponent_id  INTEGER NOT NULL
+            ,opponent_profile BLOB
+          );
+        """);
       },
       // Set the version. This executes the onCreate function and provides a
       // path to perform database upgrades and downgrades.
-      version: 4,
+      version: 1,
     );
 
     return database;

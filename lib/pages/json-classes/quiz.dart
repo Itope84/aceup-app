@@ -15,8 +15,14 @@ class Quiz {
   List<Map<String, dynamic>> questionsMap;
   bool submitted;
 
+  static Map<String, int> scores = {'easy': 2, 'medium': 4, 'difficult': 5};
+
   // I don't even know why. I guess just for easy readability
-  static Map<String, String> types = {'topic': 'topic', 'quiz': 'quiz', 'random': 'random'};
+  static Map<String, String> types = {
+    'topic': 'topic',
+    'quiz': 'quiz',
+    'random': 'random'
+  };
 
   Quiz(
       {this.id,
@@ -31,16 +37,19 @@ class Quiz {
     topicId = json['topic_id'];
     courseId = json['course_id'];
     type = json['type'];
-    
-    submitted = json['submitted'] == null || json['submitted'] == 0 ? false : true;
+
+    submitted =
+        json['submitted'] == null || json['submitted'] == 0 ? false : true;
     if (json['questions'] != null) {
-      questionsMap = json['questions_map'] is String ? jsonDecode(json['questions_map']) : json['questions_map'];
+      questionsMap = json['questions_map'] is String
+          ? jsonDecode(json['questions_map'])
+          : json['questions_map'];
     }
   }
 
   Future<List<Map<String, dynamic>>> get questionsFromDb async {
     List<Map<String, dynamic>> qs = new List<Map<String, dynamic>>();
-    await this.questionsMap.forEach((q) async{
+    await this.questionsMap.forEach((q) async {
       Map<String, dynamic> question = new Map<String, dynamic>();
       question['question'] = await Question.whereId(q['question_id']);
       question['attempt'] = q['attempt'];
@@ -55,8 +64,12 @@ class Quiz {
     List<Map<String, dynamic>> qs = new List<Map<String, dynamic>>();
     this.questionsMap.forEach((q) {
       Map<String, dynamic> question = new Map<String, dynamic>();
-      question['question'] = this.questions.firstWhere((quest) => quest.id == q['question_id'], orElse: () => null);
-      question['selected_option'] = question['question'].options.firstWhere((o) => o.key == q['attempt'], orElse: () => null);
+      question['question'] = this.questions.firstWhere(
+          (quest) => quest.id == q['question_id'],
+          orElse: () => null);
+      question['selected_option'] = question['question']
+          .options
+          .firstWhere((o) => o.key == q['attempt'], orElse: () => null);
       qs.add(question);
     });
 
@@ -105,28 +118,26 @@ class Quiz {
   }
 
   Future<void> submit() async {
-    if(this.submitted) {
+    if (this.submitted) {
       return;
     }
     // api  request to submit
     Map<String, dynamic> data = this.toJson();
 
-    if(data['topic_id'] == null) data.remove('topic_id');
-    if(data['course_id'] == null) data.remove('course_id');
+    if (data['topic_id'] == null) data.remove('topic_id');
+    if (data['course_id'] == null) data.remove('course_id');
 
     Map<String, String> headers = await ApiRequest.headers();
 
     Response response = await post(ApiRequest.BASE_URL + '/quiz/submit',
         headers: headers, body: json.encode(data));
 
-    print(data);
     int statusCode = response.statusCode;
 
     switch (statusCode) {
       case 200:
       case 201:
         Map<String, dynamic> data = json.decode(response.body);
-        print(data);
         // just in case the user closes the app after this page, we still wanna record this so we don't show them this screen anymore.
         this.submitted = true;
         this.insertToDb();
@@ -138,6 +149,7 @@ class Quiz {
         break;
       default:
         print(statusCode);
+        print(response.body);
         break;
     }
   }

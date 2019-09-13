@@ -32,17 +32,26 @@ class TopLevelDataModel extends Model {
     return _user;
   }
 
-  Future<User> getUserFromDb() async {
+  // sorry, but I gotta do this out here
+
+  Future<User> getUserFromDb({bool notify: true}) async {
     User user = (await User.users()).last;
 
-    // Get theuser's course profiles too
+    // Get the user's course profiles too
     List<CourseProfile> courseProfiles =
         await CourseProfile.whereUserId(user.id);
     user.courseProfiles = courseProfiles;
 
     _user = user;
 
-    notifyListeners();
+    if (user.courseProfiles.length > 0) {
+      _activeCourseProfile = user.courseProfiles.firstWhere((profile) =>
+          _activeCourseProfile != null
+              ? profile.id == _activeCourseProfile.id
+              : true);
+    }
+
+    if (notify) notifyListeners();
 
     return user;
   }

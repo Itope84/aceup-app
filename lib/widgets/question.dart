@@ -7,7 +7,7 @@ class QuestionWidget extends StatefulWidget {
   final Function onAnswer;
   final Option attempt;
   final bool disableOptions;
-  QuestionWidget({this.question, this.onAnswer, this.disableOptions, this.attempt});
+  QuestionWidget({this.question, this.onAnswer, this.disableOptions: false, this.attempt});
   @override
   _QuestionWidgetState createState() => _QuestionWidgetState();
 }

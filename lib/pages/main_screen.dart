@@ -1,5 +1,7 @@
 import 'package:aceup/models/main_model.dart';
 import 'package:aceup/pages/challenges.dart';
+import 'package:aceup/pages/json-classes/course-profile.dart';
+import 'package:aceup/pages/json-classes/quiz.dart';
 import 'package:aceup/pages/json-classes/user.dart';
 // import 'package:aceup/pages/eq_demo.dart';
 import 'package:aceup/pages/leaderboard.dart';
@@ -11,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'home.dart';
 import 'learn.dart';
-// import 'package:aceup/enums/connectivity_status.dart';
 import '../widgets/icon_badge.dart';
 
 class MainScreen extends StatefulWidget {
@@ -27,6 +28,8 @@ class _MainScreenState extends State<MainScreen> {
   Future<User> _userProfile;
   int _page = 0;
 
+  int _status = 0;
+
   MainModel _model = new MainModel();
 
   @override
@@ -36,19 +39,40 @@ class _MainScreenState extends State<MainScreen> {
     _userProfile = _model.userProfile();
   }
 
+  Future<void> tryFetchData() async {
+     // try submitting unsubmitted 
+     setState(() {
+       _status = 1;
+     });
+      List<Quiz> quizzes = await Quiz.whereNotSubmitted();
+      print(quizzes.length);
+      if (quizzes.length > 0) {
+        await _model.submitQuizzes();
+      }
+
+      List<CourseProfile> profiles = (await _userProfile).courseProfiles;
+
+      for (CourseProfile profile in profiles) {
+        await _model.topics(profile.course.id);
+        await _model.fetchContent(profile);
+      }
+
+    // not using setstate cause that triggers a refetch
+      _status = 0;
+
+  }
+
   goToPage(int page) {
     _pageController.jumpToPage(page);
   }
 
   @override
   Widget build(BuildContext context) {
-    // var connectionStatus = Provider.of<ConnectivityStatus>(context);
-    // if(connectionStatus != ConnectivityStatus.Offline) {
-      // try fetching content in the background
-      _model.submitQuizzes();
-      _model.fetchContent();
-      
-    // }
+    print(_status);
+    if (_status != 1) {
+      tryFetchData();
+    }
+
     Widget bottomBarIcon(
         {IconData icon = Icons.home, int page = 0, bool badge = false}) {
       return IconButton(
@@ -72,7 +96,12 @@ class _MainScreenState extends State<MainScreen> {
               onPressed: () {
                 Navigator.of(context)
                     .push(MaterialPageRoute(builder: (BuildContext context) {
-                  return ProfileScreen();
+                  return ProfileScreen(
+                    model: _model,
+                    onCourseChange: () {
+                      goToPage(1);
+                    },
+                  );
                 }));
               },
             ),

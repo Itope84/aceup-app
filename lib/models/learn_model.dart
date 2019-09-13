@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:aceup/models/top_level_data_model.dart';
+import 'package:aceup/pages/json-classes/course-profile.dart';
 import 'package:aceup/pages/json-classes/question.dart';
 import 'package:aceup/pages/json-classes/slide.dart';
 import 'package:aceup/pages/json-classes/topic.dart';
@@ -18,6 +19,7 @@ abstract class LearnModel extends TopLevelDataModel {
       await getTopicsFromDb(courseId);
       if (_topics == null || _topics.length < 2) {
         _topics = await getTopicsFromApi(courseId);
+        notifyListeners();
       } else {
         // still fetch topics from api, but don't await it.
         getTopicsFromApi(courseId);
@@ -106,17 +108,30 @@ abstract class LearnModel extends TopLevelDataModel {
     return _slides;
   }
 
-  Future<void> fetchContent() async {
-    if (this.activeCourseProfile != null) {
-      List<Topic> topics =
-          await Topic.whereCourseId(this.activeCourseProfile.course.id);
-      Topic topic = topics.firstWhere(
-          (topic) => topic.slides.length < 1 && topic.questions.length < 1);
-      // only do it for the first top without content
-      try {
-        print("fetching topic ${topic.id}");
-        getSlidesAndQuestionsFromApi(topic);
-      } finally {}
+  Future<List<Question>> getQuestionsFromDb(Topic topic) async {
+    // print(topic.id);
+    List<Question> questions = await Question.whereTopicId(topic.id);
+
+    return questions;
+  }
+
+  Future<void> fetchContent(CourseProfile profile) async {
+    List<Topic> topics = await Topic.whereCourseId(profile.course.id);
+    // topics = topics.where(
+    // (topic) {
+
+    // topic.slides == null || topic.slides.length < 1) && (topic.questions == null || topic.questions.length < 1)
+    // }).toList();
+    // only do it for the first top without content
+    for (Topic topic in topics) {
+      List<Slide> slides = await Slide.whereTopicId(topic.id);
+      List<Question> questions = await Question.whereTopicId(topic.id);
+      if (slides.length < 1 && questions.length < 1) {
+        try {
+          print("fetching topic ${topic.id}");
+          await getSlidesAndQuestionsFromApi(topic);
+        } finally {}
+      }
     }
   }
 

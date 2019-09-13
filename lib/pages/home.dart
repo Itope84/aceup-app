@@ -127,7 +127,7 @@ class _HomeState extends State<Home> {
           // Latest topic
           ScopedModelDescendant<MainModel>(
             builder: (context, widget, model) {
-              return model.activeCourseProfile == null
+              return (model.activeCourseProfile == null || model.activeCourseProfile.course.activeTopic == null)
                   ? FutureBuilder(
                       future: model.getActiveCourseProfileFromDb(),
                       builder: (context, snapshot) {
