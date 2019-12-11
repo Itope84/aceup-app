@@ -1,4 +1,6 @@
 import 'package:aceup/pages/json-classes/user.dart';
+import 'package:aceup/pages/onboarding-2.dart';
+import 'package:aceup/pages/onboarding.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'main_screen.dart';
@@ -23,7 +25,7 @@ class _EntryState extends State<Entry> {
     String token = await storage.read(key: 'token');
     List<User> users = await User.users();
     PageController _pageController;
-    Map pagesIndex = {'auth': 0, 'selectAvatar': 1, 'main': 2};
+    Map pagesIndex = {'auth': 1, 'selectAvatar': 2, 'main': 3};
 
     if (token != null && users.length > 0 && users.last.username != null) {
       User user = users.last;
@@ -34,7 +36,9 @@ class _EntryState extends State<Entry> {
             PageController(initialPage: pagesIndex['selectAvatar']);
       }
     } else {
-      _pageController = PageController(initialPage: pagesIndex['auth']);
+      // TODO: set token when onboarding has been viewed
+      _pageController = PageController(initialPage: 0);
+      // _pageController = PageController(initialPage: pagesIndex['auth']);
     }
     return _pageController;
   }
@@ -63,9 +67,10 @@ class _EntryState extends State<Entry> {
             // onPageChanged: onPageChanged,
             // bogus, simply generates 4 pages, all of them is home shikena
             children: [
-              AuthScreen(loginHandler: goToPage(1, _pageController)),
+              OnBoarding(onComplete: goToPage(1, _pageController)),
+              AuthScreen(loginHandler: goToPage(2, _pageController)),
               SelectAvatarScreen(
-                onSelect: goToPage(2, _pageController),
+                onSelect: goToPage(3, _pageController),
               ),
               MainScreen()
             ],

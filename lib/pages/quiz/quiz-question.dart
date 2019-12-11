@@ -2,6 +2,7 @@ import 'package:aceup/pages/json-classes/option.dart';
 import 'package:aceup/pages/json-classes/question.dart';
 import 'package:aceup/pages/quiz/explanation.dart';
 import 'package:aceup/widgets/block-button.dart';
+import 'package:aceup/widgets/hint-button.dart';
 import 'package:aceup/widgets/question.dart';
 import 'package:aceup/widgets/return-button.dart';
 import 'package:flutter/material.dart';
@@ -11,8 +12,12 @@ class QuizQuestion extends StatefulWidget {
   final int index;
   final int total;
   final String title;
+
   /// If attempt is not null, then that means we've come around to show the solutions and their explanations
   final Option attempt;
+  // for challenges
+  final Option opponentAttempt;
+
   /// If allowExplanations is set, such as in random question and sbt, then once user selects ansers, we show the explanation button
   final bool allowExplanations;
   final Function nextSlide;
@@ -24,6 +29,7 @@ class QuizQuestion extends StatefulWidget {
       this.index,
       this.total,
       this.attempt,
+      this.opponentAttempt,
       this.allowExplanations: false,
       this.saveAnswer});
 
@@ -81,6 +87,7 @@ class QuizQuestion_State extends State<QuizQuestion> {
                   QuestionWidget(
                     question: widget.question,
                     attempt: widget.attempt,
+                    opponentAttempt: widget.opponentAttempt,
                     disableOptions: _ready || (widget.attempt != null),
                     onAnswer: (String key) {
                       setState(() {
@@ -112,13 +119,14 @@ class QuizQuestion_State extends State<QuizQuestion> {
                           onPressed: () {
                             widget.nextSlide();
                           },
-                          child: Text(widget.attempt != null ? "Next" : "Continue"),
+                          child: Text(
+                              widget.attempt != null ? "Next" : "Continue"),
                         )
                       : Container(),
 
                   (_ready && widget.allowExplanations) || widget.attempt != null
                       ? BlockButton(
-                        color: Theme.of(context).accentColor,
+                          color: Theme.of(context).accentColor,
                           onPressed: () {
                             Navigator.push(
                                 context,
@@ -158,30 +166,12 @@ class QuizQuestion_State extends State<QuizQuestion> {
                 ),
               ),
             ),
-            widget.attempt != null ? ReturnButton(onPressed: () {
-              Navigator.pop(context);
-            }) : Container(),
-            Positioned(
-              top: 50,
-              width: 60.0,
-              right: 0.0,
-              child: RaisedButton(
-                elevation: 0.0,
-                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 0.0),
-                color: Theme.of(context).primaryColor,
-                child: Icon(
-                  Icons.lightbulb_outline,
-                  color: Colors.white,
-                ),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30.0),
-                        bottomLeft: Radius.circular(30.0))),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
+            widget.attempt != null
+                ? ReturnButton(onPressed: () {
+                    Navigator.pop(context);
+                  })
+                : Container(),
+            HintButton()
           ],
         ),
       ),

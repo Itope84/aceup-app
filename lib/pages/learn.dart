@@ -1,4 +1,5 @@
 import 'package:aceup/models/main_model.dart';
+import 'package:aceup/pages/json-classes/course-profile.dart';
 import 'package:aceup/pages/json-classes/course.dart';
 import 'package:aceup/pages/json-classes/topic.dart';
 import 'package:aceup/pages/quiz/sbt.dart';
@@ -11,7 +12,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:scoped_model/scoped_model.dart';
 // import 'details.dart';
 
-class Learn extends StatelessWidget {
+class Learn extends StatefulWidget {
   final String customTitle;
   final bool isSbt;
   final Model model;
@@ -19,12 +20,54 @@ class Learn extends StatelessWidget {
   Learn({this.customTitle, this.isSbt: false, this.model});
 
   @override
+  _LearnState createState() => _LearnState();
+}
+
+class _LearnState extends State<Learn> {
+  String customTitle;
+  bool isSbt;
+  MainModel _model;
+  // Future<List<Topic>> topics;
+  List<Topic> _topics;
+  bool _loading;
+
+  @override
+  void initState() {
+    super.initState();
+    _loading = true;
+    customTitle = widget.customTitle;
+    isSbt = widget.isSbt;
+    _model = widget.model;
+    fetchTopics();
+  }
+
+  Future<void> fetchTopics() async {
+    CourseProfile profile = _model.activeCourseProfile;
+    if (profile == null) {
+      await _model.userProfile();
+      profile = await _model.getActiveCourseProfileFromDb();
+    }
+
+    List<Topic> topics;
+    if (profile != null) {
+      topics = await _model.topics(profile.course.id);
+      if (topics == null || topics.length < 2) {
+        topics = await _model.getTopicsFromApi(profile.course.id);
+      }
+    }
+
+    setState(() {
+      _topics = topics;
+      _loading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    print(model);
-    return model != null
+    return _model != null
         ? ScopedModel<MainModel>(
-            model: model,
-            child: Scaffold(appBar: AppBar(), body: body()),
+            model: _model,
+            child: Scaffold(appBar: isSbt ? AppBar() : null, body: body()),
           )
         : Scaffold(body: body());
   }
@@ -32,26 +75,63 @@ class Learn extends StatelessWidget {
   Widget body() {
     return ScopedModelDescendant<MainModel>(
       builder: (context, widget, model) {
-        print(model.activeCourseProfile);
-        return FutureBuilder(
-          future: model.activeCourseProfile != null
-              ? model.topics(model.activeCourseProfile.course.id)
-              : null,
-          builder: (context, snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.active:
-              case ConnectionState.waiting:
-                return Center(
-                  child: SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: CircularProgressIndicator(),
-                  ),
-                );
+        return _topics != null
+            ? RefreshIndicator(
+                color: Theme.of(context).primaryColor,
+                onRefresh: () async {
+                  try {
+                    await model
+                        .getTopicsFromApi(model.activeCourseProfile.course.id);
+                  } finally {}
+                },
+                child: ListView(
+                  children: <Widget>[
+                    ScreenTitle(customTitle != null ? customTitle : "Learn"),
 
-              case ConnectionState.done:
-                if (snapshot.hasData) {
-                  return RefreshIndicator(
+                    // Course Banner
+                    Container(
+                      padding:
+                          EdgeInsets.only(top: 10, left: 20.0, right: 20.0),
+                      margin: EdgeInsets.only(bottom: 30.0),
+                      alignment: Alignment.center,
+                      child: activeCourseBanner(
+                          context, model.activeCourseProfile.course),
+                    ),
+
+                    // Body of the page
+                    Padding(
+                      padding:
+                          EdgeInsets.only(top: 10, left: 20.0, right: 20.0),
+                      child: Center(
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.85,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Text(
+                                "Learn",
+                                style: TextStyle(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).accentColor),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    topicList(
+                        _topics,
+                        model.activeCourseProfile.course.activeTopic != null
+                            ? model.activeCourseProfile.course.activeTopic.id
+                            : null,
+                        model),
+                  ],
+                ),
+              )
+            : _loading
+                ? RefreshIndicator(
                     color: Theme.of(context).primaryColor,
                     onRefresh: () async {
                       try {
@@ -59,81 +139,15 @@ class Learn extends StatelessWidget {
                             model.activeCourseProfile.course.id);
                       } finally {}
                     },
-                    child: ListView(
-                      children: <Widget>[
-                        ScreenTitle(
-                            customTitle != null ? customTitle : "Learn"),
-
-                        // Course Banner
-                        Container(
-                          padding:
-                              EdgeInsets.only(top: 10, left: 20.0, right: 20.0),
-                          margin: EdgeInsets.only(bottom: 30.0),
-                          alignment: Alignment.center,
-                          child: activeCourseBanner(
-                              context, model.activeCourseProfile.course),
-                        ),
-
-                        // Body of the page
-                        Padding(
-                          padding:
-                              EdgeInsets.only(top: 10, left: 20.0, right: 20.0),
-                          child: Center(
-                            child: Container(
-                              width: MediaQuery.of(context).size.width * 0.85,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Text(
-                                    "Learn",
-                                    style: TextStyle(
-                                        fontSize: 25,
-                                        fontWeight: FontWeight.w600,
-                                        color: Theme.of(context).accentColor),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        topicList(
-                            snapshot.data,
-                            model.activeCourseProfile.course.activeTopic != null
-                                ? model
-                                    .activeCourseProfile.course.activeTopic.id
-                                : null,
-                            model),
-                      ],
+                    child: Center(
+                      child: SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: CircularProgressIndicator(),
+                      ),
                     ),
-                  );
-                }
-
-                // TODO: Change this to a placeholder emoji of an empty set
-                return RefreshIndicator(
-                  color: Theme.of(context).primaryColor,
-                  onRefresh: () async {
-                    try {
-                      await model.getTopicsFromApi(
-                          model.activeCourseProfile.course.id);
-                    } finally {}
-                  },
-                  child: errorHolder(context),
-                );
-              default:
-                return RefreshIndicator(
-                  color: Theme.of(context).primaryColor,
-                  onRefresh: () async {
-                    try {
-                      await model.getTopicsFromApi(
-                          model.activeCourseProfile.course.id);
-                    } finally {}
-                  },
-                  child: errorHolder(context),
-                );
-            }
-          },
-        );
+                  )
+                : errorHolder(context);
       },
     );
   }

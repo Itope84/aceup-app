@@ -101,9 +101,12 @@ class DB {
             id INTEGER NOT NULL PRIMARY KEY
             ,course_id INTEGER NOT NULL
             ,challenger_id INTEGER NOT NULL
-            ,questions_map BLOB
+            ,questions BLOB
             ,opponent_id  INTEGER NOT NULL
-            ,opponent_profile BLOB
+            ,opponent BLOB
+            ,challenger BLOB
+            ,userIsChallenger INTEGER DEFAULT 0
+            ,scores BLOB
           );
         """);
       },

@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:aceup/pages/json-classes/course-profile.dart';
 import 'package:aceup/pages/json-classes/question.dart';
+import 'package:aceup/pages/json-classes/topic.dart';
 import 'package:aceup/util/database.dart';
 import 'package:aceup/util/requests.dart';
 import 'package:http/http.dart';
@@ -12,7 +14,7 @@ class Quiz {
   int courseId;
   String type;
   List<Question> questions;
-  List<Map<String, dynamic>> questionsMap;
+  List<dynamic> questionsMap;
   bool submitted;
 
   static Map<String, int> scores = {'easy': 2, 'medium': 4, 'difficult': 5};
@@ -40,15 +42,16 @@ class Quiz {
 
     submitted =
         json['submitted'] == null || json['submitted'] == 0 ? false : true;
-    if (json['questions'] != null) {
-      questionsMap = json['questions_map'] is String
+    if (json['questions_map'] != null) {
+      questionsMap = (json['questions_map'] is String
           ? jsonDecode(json['questions_map'])
-          : json['questions_map'];
+          : json['questions_map']);
     }
   }
 
   Future<List<Map<String, dynamic>>> get questionsFromDb async {
     List<Map<String, dynamic>> qs = new List<Map<String, dynamic>>();
+    // assumes questionsMap was obtained from db
     await this.questionsMap.forEach((q) async {
       Map<String, dynamic> question = new Map<String, dynamic>();
       question['question'] = await Question.whereId(q['question_id']);
@@ -140,16 +143,21 @@ class Quiz {
         Map<String, dynamic> data = json.decode(response.body);
         // just in case the user closes the app after this page, we still wanna record this so we don't show them this screen anymore.
         this.submitted = true;
-        this.insertToDb();
+
+        await this.insertToDb();
+
+        int courseId = this.courseId != null
+            ? this.courseId
+            : (await Topic.whereId(this.topicId)).courseId;
+        CourseProfile profile = await CourseProfile.whereCourseId(courseId);
+        profile.points = data['data']['total_points'];
+        await profile.insertToDb();
         break;
 
       case 422:
-        Map<String, dynamic> data = json.decode(response.body);
-        print(data);
+        // Map<String, dynamic> data = json.decode(response.body);
         break;
       default:
-        print(statusCode);
-        print(response.body);
         break;
     }
   }
@@ -193,6 +201,28 @@ class Quiz {
 
     return quizzes;
   }
+
+  static Future<Quiz> whereId(String id) async {
+    // Get a reference to the database.
+
+    Future database = DB.initialize();
+    final Database db = await database;
+
+    List<Map<String, dynamic>> results = await db.query(
+      'quizzes',
+      where: "id = ?",
+      whereArgs: [id],
+      limit: 1
+    );
+
+    Map<String, dynamic> t = results.length > 0 ? results[0] : null;
+
+    Quiz quiz = t != null ? Quiz.fromJson(t) : null;
+
+    return quiz;
+  }
+
+  
 
   static Future<List<Quiz>> whereNotSubmitted() async {
     // Get a reference to the database.

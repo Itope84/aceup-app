@@ -1,9 +1,6 @@
 import 'dart:convert';
 
-import 'package:aceup/models/learn_model.dart';
-import 'package:aceup/models/main_model.dart';
 import 'package:aceup/models/top_level_data_model.dart';
-import 'package:aceup/pages/json-classes/course-profile.dart';
 import 'package:aceup/pages/json-classes/course.dart';
 import 'package:aceup/pages/json-classes/question.dart';
 import 'package:aceup/pages/json-classes/quiz.dart';
@@ -16,43 +13,59 @@ class QuizModel extends TopLevelDataModel {
   Quiz _quiz;
   List<Question> _questions;
 
-  Future<Quiz> initQuiz(String type, {Topic topic, Course course}) async {
-    print('async stage 1');
+  Future<Quiz> initQuiz(String type,
+      {Topic topic, Course course, Quiz oldQuiz}) async {
     if (_quiz == null || _quiz.questionsMap.length < 1) {
       // generate quiz and add questions
-      Quiz quiz = new Quiz(
-          id: RandomString.CreateCryptoRandomString(),
-          topicId: topic != null ? topic.id : null,
-          courseId: course != null ? course.id : null,
-          type: type);
+      Quiz quiz = oldQuiz != null
+          ? oldQuiz
+          : new Quiz(
+              id: RandomString.CreateCryptoRandomString(),
+              topicId: topic != null ? topic.id : null,
+              courseId: course != null ? course.id : null,
+              type: type);
       List<Question> questions;
-      if (type == Quiz.types['topic']) {
-        questions = (await Question.whereTopicId(topic.id));
-        questions.shuffle();
-        questions = questions.take(10).toList();
-      } else if (type == Quiz.types['quiz']) {
-        questions = await Question.whereCourseId(course.id);
-        print(questions.length);
-        questions.shuffle();
+      if (oldQuiz == null) {
+        if (type == Quiz.types['topic']) {
+          questions = (await Question.whereTopicId(topic.id));
+          questions.shuffle();
+          questions = questions.take(10).toList();
+        } else if (type == Quiz.types['quiz']) {
+          questions = await Question.whereCourseId(course.id);
+          questions.shuffle();
 
-        questions = questions.take(20).toList();
+          questions = questions.take(20).toList();
+        } else {
+          // Random question
+          questions = await Question.whereCourseId(course.id, limit: 1);
+        }
+
+        if (questions.length < 1) {
+          // you been offline forever bro
+          questions = await getQuizQuestionsFromApi(
+              type, topic != null ? topic.courseId : course.id,
+              topicId: topic != null ? topic.id : null);
+          questions.shuffle();
+          int length;
+          if (type == 'topic') {
+            length = 10;
+          } else {
+            length = type == 'quiz' ? 20 : 1;
+          }
+          questions = questions.take(length).toList();
+        }
+
+        quiz.map_questions = questions;
       } else {
-        // Random question
-        questions = await Question.whereCourseId(course.id, limit: 1);
+        // get the questions from oldquiz questionsMap
+        questions = new List<Question>();
+        await quiz.questionsMap.forEach((q) async {
+          Question qs = await Question.whereId(q['question_id']);
+          questions.add(qs);
+        });
+        
+        quiz.questions = questions;
       }
-
-      if (questions.length < 1) {
-        // you been offline forever bro
-        print('from api');
-        questions = await getQuizQuestionsFromApi(
-            type, topic != null ? topic.courseId : course.id, topicId: topic != null ? topic.id : null);
-        questions.shuffle();
-        // TODO: fix bud: questions being fetched from db are not related to topic
-        int length = type == 'topic' ? 10 : type == 'quiz' ? 20 : 1;
-        questions = questions.take(length).toList();
-      }
-
-      quiz.map_questions = questions;
 
       _questions = questions;
 
@@ -79,18 +92,11 @@ class QuizModel extends TopLevelDataModel {
 
     int score = 0;
 
-    CourseProfile profile = activeCourseProfile;
-
     quiz.getQuestionsAndAttemptsAlreadyLoaded.forEach((question) {
       score = question['selected_option'].isAnswer ? score + 1 : score;
-      profile.points += question['selected_option'].isAnswer
-          ? Quiz.scores[question['question'].difficulty]
-          : 0;
     });
 
-    await activeCourseProfile.insertToDb();
     await quiz.insertToDb();
-
     return score;
   }
 
@@ -99,12 +105,14 @@ class QuizModel extends TopLevelDataModel {
   }
 
   /// get quiz with questions from api
-  Future<List<Question>> getQuizQuestionsFromApi(
-      String type, int courseId, {int topicId}) async {
+  Future<List<Question>> getQuizQuestionsFromApi(String type, int courseId,
+      {int topicId}) async {
     Map<String, String> headers = await ApiRequest.headers();
 
     Response response = await get(
-        ApiRequest.BASE_URL + '/courses/$courseId/questions/' + (topicId != null ? '?topic=${topicId.toString()}' : ''),
+        ApiRequest.BASE_URL +
+            '/courses/$courseId/questions/' +
+            (topicId != null ? '?topic=${topicId.toString()}' : ''),
         headers: headers);
 
     int statusCode = response.statusCode;
@@ -137,7 +145,6 @@ class QuizModel extends TopLevelDataModel {
       Quiz quiz = quizzes[i];
       try {
         // try submitting each quiz.
-        print("fetching for quiz ${quiz.id}");
         await quiz.submit();
       } finally {}
     }

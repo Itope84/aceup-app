@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart';
 import 'package:toast/toast.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../util/const.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -175,32 +176,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ],
             ),
           ),
-          Divider(
-            height: 10.0,
-            color: Colors.transparent,
-          ),
-
-          // what's this
-          Container(
-            margin:
-                const EdgeInsets.only(left: 30.0, right: 30.0, bottom: 10.0),
-            child: Row(
-              children: <Widget>[
-                Spacer(),
-                FlatButton(
-                  textColor: Constants.mainPrimary,
-                  splashColor: Constants.mainPrimary,
-                  child: Text(
-                    "What's this?",
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      fontSize: 15.0,
-                    ),
-                  ),
-                  onPressed: () {},
-                ),
-              ],
-            ),
+          SizedBox(
+            height: 40.0,
           ),
 
           Container(
@@ -270,32 +247,39 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             ),
           ),
 
-          // Demo button goes here
-          // Container(
-          //   margin:
-          //       const EdgeInsets.only(left: 30.0, right: 30.0, bottom: 50.0),
-          //   child: Row(
-          //     children: <Widget>[
-          //       Spacer(),
-          //       FlatButton(
-          //         textColor: Constants.mainPrimary,
-          //         splashColor: Constants.mainPrimaryLight,
-          //         child: Text(
-          //           "Skip this step, Try out a demo",
-          //           textAlign: TextAlign.center,
-          //           style: TextStyle(
-          //             fontWeight: FontWeight.w400,
-          //             fontSize: 15.0,
-          //           ),
-          //         ),
-          //         onPressed: () {
-          //           widget.gotoSignup();
-          //         },
-          //       ),
-          //       Spacer(),
-          //     ],
-          //   ),
-          // ),
+          // Get Pin, opens whatsapp
+          Container(
+            margin:
+                const EdgeInsets.only(left: 30.0, right: 30.0, bottom: 50.0),
+            child: Row(
+              children: <Widget>[
+                Spacer(),
+                FlatButton(
+                  textColor: Constants.mainPrimary,
+                  splashColor: Constants.mainPrimaryLight,
+                  child: Text(
+                    "Don't have a pin? Get One here",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 15.0,
+                    ),
+                  ),
+                  onPressed: () async {
+                    String url = "whatsapp://send?phone=2349034971989";
+                    if (await canLaunch(url)) {
+                      launch(url);
+                    } else {
+                      Scaffold.of(context).showSnackBar(SnackBar(
+                        content: Text("Whatsapp is not installed"),
+                      ));
+                    }
+                  },
+                ),
+                Spacer(),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -317,9 +301,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
     switch (statusCode) {
       case 201:
-        
         Map<String, dynamic> data = json.decode(response.body);
-        
+
         // just in case the user closes the app after this page, we still wanna record this so we don't show them this screen anymore.
         SubscriptionItem sub = SubscriptionItem.fromJson(data['data']);
         // store it in database
@@ -327,7 +310,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         // store token
         final storage = new FlutterSecureStorage();
         await storage.write(key: 'token', value: data['token']);
-        
+
         widget.onActivate(sub.user);
         break;
 
@@ -344,7 +327,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             backgroundColor: Colors.redAccent);
         break;
       default:
-      
         Toast.show("Sorry, an error occured!", context,
             duration: Toast.LENGTH_LONG,
             gravity: Toast.BOTTOM,

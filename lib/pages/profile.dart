@@ -1,12 +1,16 @@
 import 'package:aceup/models/main_model.dart';
+import 'package:aceup/pages/add-subscription.dart';
 import 'package:aceup/pages/json-classes/course-profile.dart';
-import 'package:aceup/pages/json-classes/course.dart';
 import 'package:aceup/pages/json-classes/user.dart';
 import 'package:aceup/pages/pageholder.dart';
+import 'package:aceup/util/avatar.dart';
+import 'package:aceup/widgets/block-button.dart';
+import 'package:aceup/widgets/hint-button.dart';
 import 'package:aceup/widgets/return-button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   final MainModel model;
@@ -17,6 +21,26 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  int _position;
+  bool _loadingSub = false;
+  @override
+  void initState() {
+    super.initState();
+    getPosition();
+  }
+
+  void getPosition() async {
+    if (widget.model.activeCourseProfile != null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      int pos = await prefs.getInt(
+          "${widget.model.activeCourseProfile.course.id}leaderboardPosition");
+
+      setState(() {
+        _position = pos;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScopedModel<MainModel>(
@@ -39,17 +63,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
-                                Image.asset(
-                                  'assets/avatars/001.png',
-                                  width: 80.0,
-                                ),
+                                Avatars.avatarFromId(user.avatarId,
+                                    username: user.username),
                                 SizedBox(
                                   height: 20.0,
                                 ),
                                 Text(
                                   (user.firstName != null
                                           ? user.firstName
-                                          : "") +
+                                          : "") + " " +
                                       (user.lastName != null
                                           ? user.lastName
                                           : ""),
@@ -77,7 +99,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             color: Theme.of(context).accentColor,
                           ),
                           SizedBox(
-                            height: 30.0,
+                            height: 15.0,
+                          ),
+                          Center(
+                            child: Text(
+                              "Active: " +
+                                  model.activeCourseProfile.course.title,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  color: Theme.of(context).primaryColor),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 20.0,
                           ),
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
@@ -98,7 +134,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     height: 5.0,
                                   ),
                                   Text(
-                                    "240",
+                                    _position != null
+                                        ? _position.toString()
+                                        : "?",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                         color: Theme.of(context).primaryColor,
@@ -160,6 +198,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               return activeCourseBanner(
                                   context, profile, model);
                             }).toList(),
+                          ),
+                          SizedBox(
+                            height: 10.0,
+                          ),
+                          Row(
+                            children: <Widget>[
+                              Expanded(
+                                child: BlockButton(
+                                  child: Text("Add Subscription"),
+                                  onPressed: () {
+                                    setState(() {
+                                      _loadingSub = true;
+                                    });
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (BuildContext context) =>
+                                              AddSubscription(
+                                                  onActivate: () async {
+                                                    await model.getUserFromApi();
+                                                    setState(() {
+                                                      _loadingSub = false;
+                                                    });
+                                                  }),
+                                          fullscreenDialog: true,
+                                        ));
+                                  },
+                                ),
+                              )
+                            ],
                           )
                         ],
                       ),
@@ -167,28 +235,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ReturnButton(onPressed: () {
                       Navigator.pop(context);
                     }),
-                    Positioned(
-                      top: 50,
-                      width: 60.0,
-                      right: 0.0,
-                      child: RaisedButton(
-                        elevation: 0.0,
-                        padding: EdgeInsets.symmetric(
-                            vertical: 10.0, horizontal: 0.0),
-                        color: Theme.of(context).primaryColor,
-                        child: Icon(
-                          Icons.lightbulb_outline,
-                          color: Colors.white,
-                        ),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(30.0),
-                                bottomLeft: Radius.circular(30.0))),
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ),
+                    HintButton()
                   ],
                 );
               }

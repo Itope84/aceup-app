@@ -71,13 +71,13 @@ class _QuizWidgetState extends State<QuizWidget> {
                                     quiz: quiz,
                                     showQuizScore: () async {
                                       int score = await model.markQuiz(quiz);
-                                      print(score);
+                                      
                                       double percent = score /
                                           (quiz.questions.length > 0
                                               ? quiz.questions.length
                                               : 1) *
                                           100;
-                                      print(percent);
+                                      
                                       return percent.toInt();
                                     },
                                   )

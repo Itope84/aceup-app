@@ -75,6 +75,30 @@ class CourseProfile {
     return profiles;
   }
 
+  static Future<CourseProfile> whereCourseId(int id) async {
+    // Get a reference to the database.
+
+    Future database = DB.initialize();
+    final Database db = await database;
+
+    List<Map<String, dynamic>> results = await db.query(
+      'course_profiles',
+      where: "course_id = ?",
+      whereArgs: [id],
+      limit: 1
+    );
+
+    Map<String, dynamic> prof = results.length > 0 ? results[0] : null;
+
+    
+    CourseProfile cp = CourseProfile.fromJson(prof);
+
+    Course course = await Course.whereId(cp.courseId);
+      cp.course = course;
+
+    return cp;
+  }
+
   static Future<CourseProfile> whereId(int id) async {
     // Get a reference to the database.
 

@@ -1,5 +1,6 @@
 import 'package:aceup/pages/json-classes/slide.dart';
 import 'package:aceup/widgets/block-button.dart';
+import 'package:aceup/widgets/hint-button.dart';
 import 'package:aceup/widgets/question.dart';
 import 'package:flutter/material.dart';
 
@@ -48,7 +49,8 @@ class QuestionSlide_State extends State<QuestionSlide> {
                   // body
                   QuestionWidget(
                       question: widget.slide,
-                      onAnswer: () {
+                      disableOptions: _ready,
+                      onAnswer: (String key) {
                         setState(() {
                           _ready = true;
                         });
@@ -66,6 +68,7 @@ class QuestionSlide_State extends State<QuestionSlide> {
                           child: Text("Continue"),
                         )
                       : Container(),
+
                   Text(
                     "Explanations are in the next slide",
                     textAlign: TextAlign.center,
@@ -95,27 +98,7 @@ class QuestionSlide_State extends State<QuestionSlide> {
                 ),
               ),
             ),
-            Positioned(
-              top: 50,
-              width: 60.0,
-              right: 0.0,
-              child: RaisedButton(
-                elevation: 0.0,
-                padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 0.0),
-                color: Theme.of(context).primaryColor,
-                child: Icon(
-                  Icons.lightbulb_outline,
-                  color: Colors.white,
-                ),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(30.0),
-                        bottomLeft: Radius.circular(30.0))),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-            ),
+            HintButton()
           ],
         ),
       ),

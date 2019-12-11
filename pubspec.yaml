@@ -11,7 +11,7 @@ description: Learn on the go!.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 1.1.0+5
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -35,9 +35,8 @@ dependencies:
   shared_preferences: ^0.5.3+4
   path:
   http: ^0.12.0+2
-  background_fetch: '^0.1.0'
-  # provider: ^2.0.1
-  # connectivity: ^0.4.3+1
+  url_launcher: ^5.1.3
+  fancy_on_boarding: ^1.2.0
 
 dev_dependencies:
   flutter_launcher_icons: "^0.7.2"
@@ -56,11 +55,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/1.jpeg
-    - assets/2.jpeg
-    - assets/3.jpeg
-    - assets/4.jpeg
-    - assets/5.jpeg
+    - assets/screen-1.png
+    - assets/screen-2.png
+    - assets/screen-3.png
     - assets/chemistry.png
     - assets/mth-101.png
     - assets/mth-105.png
@@ -80,6 +77,8 @@ flutter:
     - assets/gt60.png
     - assets/lt60.png
     - assets/aceup-circle-icon.png
+    - assets/icons/launcher-green.png
+    - assets/icons/launcher-white.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
   # For details regarding adding assets from package dependencies, see
@@ -111,7 +110,8 @@ flutter:
 flutter_icons:
   android: "launcher_icon" 
   ios: true
-  image_path: "assets/aceup-circle-icon.png"
+  image_path: "assets/icons/launcher-green.png"
+  adaptive_icon_background: "#ffffff"
 
 analyzer:
   strong-mode: true

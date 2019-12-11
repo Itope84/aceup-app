@@ -128,7 +128,6 @@ abstract class LearnModel extends TopLevelDataModel {
       List<Question> questions = await Question.whereTopicId(topic.id);
       if (slides.length < 1 && questions.length < 1) {
         try {
-          print("fetching topic ${topic.id}");
           await getSlidesAndQuestionsFromApi(topic);
         } finally {}
       }

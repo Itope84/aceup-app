@@ -1,6 +1,7 @@
 
 import 'package:aceup/pages/json-classes/slide.dart';
 import 'package:aceup/util/custom_html.dart';
+import 'package:aceup/widgets/hint-button.dart';
 // import 'package:aceup/widgets/main-header.dart';
 import 'package:aceup/widgets/pagination.dart';
 import 'package:aceup/widgets/return-button.dart';
@@ -72,27 +73,7 @@ class DefaultSlide extends StatelessWidget {
           ReturnButton(onPressed: () {
             Navigator.pop(context);
           }),
-          Positioned(
-            top: 50,
-            width: 60.0,
-            right: 0.0,
-            child: RaisedButton(
-              elevation: 0.0,
-              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 0.0),
-              color: Theme.of(context).primaryColor,
-              child: Icon(
-                Icons.lightbulb_outline,
-                color: Colors.white,
-              ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30.0),
-                      bottomLeft: Radius.circular(30.0))),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
+          HintButton()
         ],
       ),
     );

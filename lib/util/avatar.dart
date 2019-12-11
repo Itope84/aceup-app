@@ -20,27 +20,43 @@ class Avatars {
 
     return avatars;
   }
+
+  static smallAvatars(double width, {double margin}) {
+    List<Widget> avatars = [];
+
+    files.forEach((file) {
+      avatars.add(Container(
+        margin: EdgeInsets.all(margin != null ? margin :  13),
+        child: Image.asset(
+          file,
+          width: width,
+        ),
+      ));
+    });
+
+    return avatars;
+  }
   
-  static Widget avatarFromId(int avatarId, {String firstname, String lastname}) {
-    return avatarId > 0 ? avatars[avatarId - 1] : defaultAvatar(firstname: firstname, lastname: lastname);
+  static Widget avatarFromId(int avatarId, {String username, double width, double margin}) {
+    return avatarId != null && avatarId > 0 ? width != null ? smallAvatars(width, margin: margin)[avatarId - 1] : avatars[avatarId - 1] : defaultAvatar(username: username != null ? username.toUpperCase() : null, width: width, margin: margin);
   }
 
-  static Widget defaultAvatar({String firstname, String lastname}) {
+  static Widget defaultAvatar({String username, double width, double margin}) {
     Widget nameAvatar = Container(
-      margin: EdgeInsets.all(13),
-      width: 80.0,
-      height: 80.0,
+      margin: EdgeInsets.all(margin != null ? margin : 13),
+      width: width != null ? width : 80.0,
+      height: width != null ? width : 80.0,
       decoration: new BoxDecoration(
         color: Constants.mainPrimaryLight,
         shape: BoxShape.circle,
       ),
       child: Center(
         child: Text(
-          firstname != null && lastname != null ? firstname.substring(0, 1) + lastname.substring(0, 1) : "?",
+          username != null ? username.substring(0, 1) + username.substring(username.length - 2, username.length - 1) : "?",
           style: TextStyle(
-            fontSize: 40,
+            fontSize: width != null ? width / 2 : 40,
             color: Constants.mainWhite,
-            fontWeight: FontWeight.w900,
+            fontWeight: width != null ? FontWeight.bold : FontWeight.w900,
           ),
         ),
       ),

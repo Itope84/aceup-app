@@ -3,12 +3,11 @@ import 'package:aceup/pages/json-classes/question.dart';
 import 'package:aceup/pages/json-classes/quiz.dart';
 import 'package:aceup/pages/json-classes/topic.dart';
 import 'package:aceup/pages/pageholder.dart';
-import 'package:aceup/pages/quiz/quiz-complete.dart';
 import 'package:aceup/pages/quiz/quiz-holder.dart';
-import 'package:aceup/pages/quiz/quiz-question.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SolveByTopic extends StatefulWidget {
   final Topic topic;
@@ -29,6 +28,72 @@ class _SolveByTopicState extends State<SolveByTopic> {
     topic = widget.topic;
     _controller = new PageController();
     _initQuiz = _model.initQuiz('topic', topic: topic);
+    // initQuiz();
+  }
+
+  /// Handles checking if quiz is in progress
+  Future<Quiz> initQuiz() async {
+    Future<Quiz> _quiz;
+    // check if quiz is saved.
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String quizIdName = "sbt${topic.id}QuizId";
+    String oldQuizId = await prefs.getString(quizIdName);
+
+    Quiz quiz = oldQuizId != null ? await Quiz.whereId(oldQuizId) : null;
+
+    if (quiz != null && quiz.questionsMap != null) {
+      // get last quiz question
+      String indexName = "sbt${topic.id}lastQuestionIndex";
+
+      int lastIndex = await prefs.getInt(indexName);
+      // show modal
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false, // user must tap button!
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Continue from saved quiz?'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text('There is a previously saved quiz on this topic'),
+                  Text('Do you want to continue?'),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('New Quiz'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              RaisedButton(
+                color: Theme.of(context).primaryColor,
+                child: Text('Continue'),
+                onPressed: () {
+                  _quiz = _model.initQuiz('topic', topic: topic, oldQuiz: quiz);
+                  setState(() {
+                    _controller = new PageController(
+                        initialPage: lastIndex != null ? lastIndex : 0);
+                    _initQuiz = _quiz;
+                  });
+                  print(_initQuiz);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      _quiz = _model.initQuiz('topic', topic: topic);
+      setState(() {
+        _initQuiz = _quiz;
+      });
+    }
+
+    return _quiz;
   }
 
   @override

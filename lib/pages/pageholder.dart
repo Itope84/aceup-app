@@ -1,3 +1,5 @@
+import 'package:aceup/pages/hints.dart';
+import 'package:aceup/widgets/hint-button.dart';
 import 'package:aceup/widgets/return-button.dart';
 import 'package:flutter/material.dart';
 
@@ -49,28 +51,7 @@ class PageHolder extends StatelessWidget {
                     : Navigator.pop(context);
               }),
         displayHint
-            ? Positioned(
-                top: 50,
-                width: 60.0,
-                right: 0.0,
-                child: RaisedButton(
-                  elevation: 0.0,
-                  padding:
-                      EdgeInsets.symmetric(vertical: 10.0, horizontal: 0.0),
-                  color: Theme.of(context).primaryColor,
-                  child: Icon(
-                    Icons.lightbulb_outline,
-                    color: Colors.white,
-                  ),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(30.0),
-                          bottomLeft: Radius.circular(30.0))),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              )
+            ? HintButton()
             : Container(),
       ],
     );

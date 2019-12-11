@@ -89,6 +89,8 @@ class Slide {
       return t;
     });
 
+    slides.sort((Slide prevslide, Slide currslide) => prevslide.index < currslide.index ? -1 : 1);
+
     return slides;
   }
 

@@ -6,8 +6,9 @@ class QuestionWidget extends StatefulWidget {
   final dynamic question;
   final Function onAnswer;
   final Option attempt;
+  final Option opponentAttempt;
   final bool disableOptions;
-  QuestionWidget({this.question, this.onAnswer, this.disableOptions: false, this.attempt});
+  QuestionWidget({this.question, this.onAnswer, this.disableOptions: false, this.attempt, this.opponentAttempt});
   @override
   _QuestionWidgetState createState() => _QuestionWidgetState();
 }
@@ -46,6 +47,7 @@ class _QuestionWidgetState extends State<QuestionWidget> {
       child: Container(
         margin: EdgeInsets.only(bottom: 20.0),
         decoration: BoxDecoration(
+          border: widget.opponentAttempt != null && widget.opponentAttempt.key == _option.key ? Border.all(color: Colors.orange, width: 2.0) : null,
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(color: Color.fromRGBO(30, 30, 30, 0.3), blurRadius: 0.3)
@@ -92,7 +94,6 @@ class _QuestionWidgetState extends State<QuestionWidget> {
           _selected = index;
         });
         if (widget.onAnswer != null) {
-          print(_option.key);
           widget.onAnswer(_option.key);
         }
       },

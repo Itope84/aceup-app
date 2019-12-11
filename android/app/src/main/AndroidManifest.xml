@@ -10,7 +10,7 @@
     <application tools:replace="android:label"
         android:usesCleartextTraffic="true"
         android:name="io.flutter.app.FlutterApplication"
-        android:label="aceup"
+        android:label="AceUp Elearning"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"

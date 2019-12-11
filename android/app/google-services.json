@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "465261840616",
+    "firebase_url": "https://aceup-elearning.firebaseio.com",
+    "project_id": "aceup-elearning",
+    "storage_bucket": "aceup-elearning.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:465261840616:android:c1d0a36792adf03ec6615d",
+        "android_client_info": {
+          "package_name": "app.aceup.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "465261840616-7vncl5883v6agnm88p5itlhcr438ktab.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfB8Aez0WlGexaiT_tBB0mxC7ZSi-ZK64"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "465261840616-7vncl5883v6agnm88p5itlhcr438ktab.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

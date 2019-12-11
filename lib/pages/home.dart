@@ -1,24 +1,109 @@
+import 'dart:convert';
+
 import 'package:aceup/models/main_model.dart';
 import 'package:aceup/pages/json-classes/course-profile.dart';
+import 'package:aceup/pages/json-classes/opponent-profile.dart';
 import 'package:aceup/pages/topic/slides.dart';
+import 'package:aceup/util/avatar.dart';
 import 'package:aceup/util/const.dart';
+import 'package:aceup/util/requests.dart';
 import 'package:aceup/widgets/screen-title.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'details.dart';
 
 class Home extends StatefulWidget {
   final Function gotoPage;
-
-  Home({this.gotoPage});
+  final MainModel model;
+  Home({this.gotoPage, this.model});
   @override
   _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
   // final TextEditingController _searchControl = new TextEditingController();
+  MainModel _model;
+  Future<CourseProfile> activeCourseProfile;
+  CourseProfile _activeCourseProfile;
+  bool _loadingProfile = true;
+  bool _loadingLeaderboard = true;
+  List<OpponentProfile> _leaderboard;
+
+  @override
+  void initState() {
+    super.initState();
+    _model = widget.model;
+    getActiveCourseProfile();
+    getLeaderboard();
+  }
+
+  Future<void> getLeaderboard() async {
+    if (_activeCourseProfile == null) {
+      return;
+    }
+
+    Map<String, String> headers = await ApiRequest.headers();
+
+    Response response = await get(
+        ApiRequest.BASE_URL +
+            '/courses/${_activeCourseProfile.course.id}/leaderboard/abbreviated',
+        headers: headers);
+
+    int statusCode = response.statusCode;
+
+    switch (statusCode) {
+      case 200:
+        String res = response.body;
+        Map<String, dynamic> data = json.decode(res);
+        List<dynamic> jsonp = data['data'];
+
+        List<OpponentProfile> profiles = List.generate(jsonp.length, (i) {
+          return OpponentProfile.fromJson(jsonp[i]);
+        }).toList();
+
+        if (this.mounted) {
+          setState(() {
+            _leaderboard = profiles;
+            _loadingLeaderboard = false;
+          });
+        }
+        break;
+      case 401:
+        // return to login
+        break;
+      default:
+        break;
+    }
+  }
+
+  Future<void> getActiveCourseProfile() async {
+    if (_model.activeCourseProfile == null) {
+      await _model.userProfile();
+    }
+    CourseProfile profile = _model.activeCourseProfile == null ||
+            _model.activeCourseProfile.course.activeTopic == null
+        ? await _model.getActiveCourseProfileFromDb()
+        : _model.activeCourseProfile;
+
+    if (this.mounted) {
+      setState(() {
+        _activeCourseProfile = profile;
+        _loadingProfile = false;
+      });
+    }
+
+    try {
+      await getLeaderboard();
+    } finally {
+      if (this.mounted) {
+        setState(() {
+          _loadingLeaderboard = false;
+        });
+      }
+    }
+  }
 
   Widget activeTopic(CourseProfile profile, MainModel model) {
     return Container(
@@ -87,16 +172,17 @@ class _HomeState extends State<Home> {
             ],
           ),
         ),
-        onTap: () async {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (BuildContext context) {
-                return SlideContainer(
-                    topic: profile.course.activeTopic);
+        onTap: profile.course == null || profile.course.activeTopic == null
+            ? null
+            : () async {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (BuildContext context) {
+                      return SlideContainer(topic: profile.course.activeTopic);
+                    },
+                  ),
+                );
               },
-            ),
-          );
-        },
       ),
     );
   }
@@ -117,6 +203,106 @@ class _HomeState extends State<Home> {
         child: child);
   }
 
+  Widget abbreviatedLeaderboard() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(
+          padding: EdgeInsets.all(10.0),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text("Pos",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 15.0,
+                        fontWeight: FontWeight.w600)),
+              ),
+              Expanded(
+                flex: 3,
+                child: Text("User",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 15.0,
+                        fontWeight: FontWeight.w600)),
+              ),
+              Expanded(
+                child: Text("Pts",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                        fontSize: 15.0,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        ),
+        Column(
+          children: _leaderboard
+              .asMap()
+              .map(
+                (index, profile) => MapEntry(
+                  index,
+                  Container(
+                    padding: EdgeInsets.all(10.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        Expanded(
+                            child: Icon(
+                          index == 0
+                              ? Icons.arrow_drop_up
+                              : index == 1
+                                  ? MdiIcons.minus
+                                  : Icons.arrow_drop_down,
+                          color: index == 0
+                              ? Theme.of(context).primaryColor
+                              : index == 1
+                                  ? Theme.of(context).accentColor
+                                  : Colors.red,
+                        )),
+                        Expanded(
+                          flex: 3,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: <Widget>[
+                              Avatars.avatarFromId(profile.avatarId,
+                                  width: 25.0, margin: 0),
+                              SizedBox(
+                                width: 5.0,
+                              ),
+                              Text(
+                                profile.username,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontSize: 15.0,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(profile.points.toString(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 15.0, fontWeight: FontWeight.w500)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+              .values
+              .toList(),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,57 +313,39 @@ class _HomeState extends State<Home> {
           // Latest topic
           ScopedModelDescendant<MainModel>(
             builder: (context, widget, model) {
-              return (model.activeCourseProfile == null || model.activeCourseProfile.course.activeTopic == null)
-                  ? FutureBuilder(
-                      future: model.getActiveCourseProfileFromDb(),
-                      builder: (context, snapshot) {
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.active:
-                          case ConnectionState.waiting:
-                            return placeholderCard(
-                                child: Center(
-                              child: SizedBox(
-                                width: 50,
-                                height: 50,
-                                child: CircularProgressIndicator(),
+              return _activeCourseProfile != null
+                  ? activeTopic(_activeCourseProfile, model)
+                  : _loadingProfile
+                      ? placeholderCard(
+                          child: Center(
+                            child: SizedBox(
+                              width: 50,
+                              height: 50,
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                        )
+                      : placeholderCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              SizedBox(
+                                width: 50.0,
+                                height: 50.0,
+                                child: Icon(
+                                  MdiIcons.alertCircle,
+                                  size: 50.0,
+                                  color: Colors.blueGrey,
+                                ),
                               ),
-                            ));
-                          case ConnectionState.done:
-                            if (snapshot.hasData) {
-                              return activeTopic(snapshot.data, model);
-                            }
-                            return placeholderCard(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  SizedBox(
-                                    width: 50.0,
-                                    height: 50.0,
-                                    child: Icon(
-                                      MdiIcons.alertCircle,
-                                      size: 50.0,
-                                      color: Colors.blueGrey,
-                                    ),
-                                  ),
-                                  Text(
-                                    "You need internet to load the app the first time.",
-                                    textAlign: TextAlign.center,
-                                  )
-                                ],
-                              ),
-                            );
-
-                          default:
-                            return placeholderCard(
-                              child: Center(
-                                child: Text("An error occured"),
-                              ),
-                            );
-                        }
-                      },
-                    )
-                  : activeTopic(model.activeCourseProfile, model);
+                              Text(
+                                "You need internet to load the app the first time.",
+                                textAlign: TextAlign.center,
+                              )
+                            ],
+                          ),
+                        );
             },
           ),
 
@@ -278,204 +446,30 @@ class _HomeState extends State<Home> {
                             ],
                             color: Constants.mainWhite),
                         width: MediaQuery.of(context).size.width * 0.85,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Container(
-                              padding: EdgeInsets.all(10.0),
-                              child: Row(
-                                children: <Widget>[
-                                  Expanded(
-                                    child: Text("Pos",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w600)),
-                                  ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Text("User",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w600)),
-                                  ),
-                                  Expanded(
-                                    child: Text("Pts",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            color:
-                                                Theme.of(context).primaryColor,
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w600)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.all(10.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: Text("2",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Image.asset(
-                                          'assets/avatars/001.png',
-                                          width: 25.0,
-                                        ),
-                                        SizedBox(
-                                          width: 5.0,
-                                        ),
-                                        Text(
-                                          "Santiago",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontSize: 15.0,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                      ],
+                        child: _leaderboard != null
+                            ? abbreviatedLeaderboard()
+                            : _loadingLeaderboard
+                                ? Center(
+                                    child: SizedBox(
+                                      width: 50,
+                                      height: 50,
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  )
+                                : Padding(
+                                    padding: EdgeInsets.all(20.0),
+                                    child: Center(
+                                      child: Text(
+                                          "Could not fetch Leaderboard data"),
                                     ),
                                   ),
-                                  Expanded(
-                                    child: Text("40",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.all(10.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: Text("2",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Image.asset(
-                                          'assets/avatars/001.png',
-                                          width: 25.0,
-                                        ),
-                                        SizedBox(
-                                          width: 5.0,
-                                        ),
-                                        Text(
-                                          "Santiago",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontSize: 15.0,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Text("40",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.all(10.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: <Widget>[
-                                  Expanded(
-                                    child: Text("2",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: <Widget>[
-                                        Image.asset(
-                                          'assets/avatars/001.png',
-                                          width: 25.0,
-                                        ),
-                                        SizedBox(
-                                          width: 5.0,
-                                        ),
-                                        Text(
-                                          "Santiago",
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                              fontSize: 15.0,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Text("40",
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w500)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                       SizedBox(height: 7),
                     ],
                   ),
                 ),
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return Details();
-                      },
-                    ),
-                  );
+                  widget.gotoPage(4);
                 },
               ),
             ),

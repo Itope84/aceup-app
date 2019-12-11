@@ -1,5 +1,6 @@
 import 'package:aceup/models/main_model.dart';
 import 'package:aceup/pages/challenges.dart';
+import 'package:aceup/pages/hints.dart';
 import 'package:aceup/pages/json-classes/course-profile.dart';
 import 'package:aceup/pages/json-classes/quiz.dart';
 import 'package:aceup/pages/json-classes/user.dart';
@@ -40,26 +41,25 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> tryFetchData() async {
-     // try submitting unsubmitted 
-     setState(() {
-       _status = 1;
-     });
-      List<Quiz> quizzes = await Quiz.whereNotSubmitted();
-      print(quizzes.length);
-      if (quizzes.length > 0) {
-        await _model.submitQuizzes();
-      }
+    // try submitting unsubmitted
+    setState(() {
+      _status = 1;
+    });
+    List<Quiz> quizzes = await Quiz.whereNotSubmitted();
 
-      List<CourseProfile> profiles = (await _userProfile).courseProfiles;
+    if (quizzes.length > 0) {
+      await _model.submitQuizzes();
+    }
 
-      for (CourseProfile profile in profiles) {
-        await _model.topics(profile.course.id);
-        await _model.fetchContent(profile);
-      }
+    List<CourseProfile> profiles = (await _userProfile).courseProfiles;
+
+    for (CourseProfile profile in profiles) {
+      await _model.topics(profile.course.id);
+      await _model.fetchContent(profile);
+    }
 
     // not using setstate cause that triggers a refetch
-      _status = 0;
-
+    _status = 0;
   }
 
   goToPage(int page) {
@@ -68,7 +68,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(_status);
     if (_status != 1) {
       tryFetchData();
     }
@@ -110,7 +109,13 @@ class _MainScreenState extends State<MainScreen> {
                 Icons.lightbulb_outline,
               ),
               onPressed: () {
-                // widget.changeThemeHandler();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => Hint(),
+                    fullscreenDialog: true,
+                  ),
+                );
               },
             ),
           ],
@@ -200,7 +205,7 @@ class _MainScreenState extends State<MainScreen> {
                                           onTap: () {
                                             // Update the state of the app.
                                             model.activeCourseProfile = profile;
-                                            goToPage(1);
+                                            goToPage(_page == 1 ? 0 : 1);
                                             Navigator.pop(context);
                                           },
                                         ),
@@ -230,16 +235,17 @@ class _MainScreenState extends State<MainScreen> {
           onPageChanged: onPageChanged,
           children: <Widget>[
             Home(
+              model: _model,
               gotoPage: (int page) {
                 goToPage(page);
               },
             ),
-            Learn(),
+            Learn(model: _model),
             Playground(
               model: _model,
             ),
             ChallengesScreen(),
-            LeaderboardScreen()
+            LeaderboardScreen(model: _model),
             // EqDemo()
           ],
         ),

@@ -8,7 +8,6 @@ import 'package:aceup/pages/topic/question-slide.dart';
 import 'package:aceup/widgets/error.dart';
 import 'package:aceup/widgets/fullpage-loader.dart';
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class SlideContainer extends StatefulWidget {
@@ -50,7 +49,7 @@ class _SlideContainerState extends State<SlideContainer> {
         child: Scaffold(
           body: ScopedModelDescendant<MainModel>(
             builder: (context, widget, model) {
-              print("rendering");
+              // print("rendering");
               return FutureBuilder(
                 future: _slides,
                 builder: (context, snapshot) {

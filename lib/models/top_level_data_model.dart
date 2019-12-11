@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:aceup/pages/json-classes/course-profile.dart';
 import 'package:aceup/pages/json-classes/course.dart';
-import 'package:aceup/pages/json-classes/slide.dart';
 import 'package:aceup/pages/json-classes/topic.dart';
 import 'package:aceup/pages/json-classes/user.dart';
 import 'package:aceup/util/requests.dart';
@@ -137,7 +136,6 @@ class TopLevelDataModel extends Model {
       profile = user.courseProfiles.length > 0 ? user.courseProfiles[0] : null;
       if (profile != null) {
         profile.course = await Course.whereId(profile.courseId);
-        // TODO: Change this
         profile.course.activeTopic = await Topic.firstTopic(profile.course.id);
       }
     }

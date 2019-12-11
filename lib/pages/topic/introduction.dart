@@ -3,6 +3,7 @@ import 'package:aceup/pages/quiz/sbt.dart';
 import 'package:aceup/pages/topic/slides.dart';
 import 'package:aceup/util/custom_html.dart';
 import 'package:aceup/widgets/block-button.dart';
+import 'package:aceup/widgets/hint-button.dart';
 import 'package:aceup/widgets/main-header.dart';
 import 'package:aceup/widgets/return-button.dart';
 import 'package:flutter/material.dart';
@@ -116,27 +117,7 @@ class _IntroductionState extends State<Introduction> {
           ReturnButton(onPressed: () {
             Navigator.pop(context);
           }),
-          Positioned(
-            top: 50,
-            width: 60.0,
-            right: 0.0,
-            child: RaisedButton(
-              elevation: 0.0,
-              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 0.0),
-              color: Theme.of(context).primaryColor,
-              child: Icon(
-                Icons.lightbulb_outline,
-                color: Colors.white,
-              ),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30.0),
-                      bottomLeft: Radius.circular(30.0))),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
+          HintButton()
         ],
       ),
     );

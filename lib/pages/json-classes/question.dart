@@ -125,8 +125,7 @@ class Question {
   static Future<Question> whereId(int id) async {
     // Get a reference to the database.
 
-    Future database = DB.initialize();
-    final Database db = await database;
+    final Database db = await DB.initialize();
 
     List<Map<String, dynamic>> results = await db.query(
       'questions',

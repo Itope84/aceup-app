@@ -1,4 +1,5 @@
 import 'package:aceup/models/main_model.dart';
+import 'package:aceup/pages/challenges/select-opponent.dart';
 import 'package:aceup/pages/learn.dart';
 import 'package:aceup/pages/quiz/quiz.dart';
 import 'package:aceup/util/const.dart';
@@ -68,13 +69,17 @@ class Playground extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(new MaterialPageRoute(
-                          builder: (context) {
-                            return QuizWidget();
-                          },
-                        ));
-                      },
+                      onTap: model.activeCourseProfile != null
+                          ? () {
+                              Navigator.of(context).push(new MaterialPageRoute(
+                                builder: (context) {
+                                  return SelectOpponent(
+                                    course: model.activeCourseProfile.course,
+                                  );
+                                },
+                              ));
+                            }
+                          : null,
                       child: Container(
                         child: Center(
                           child: Icon(
